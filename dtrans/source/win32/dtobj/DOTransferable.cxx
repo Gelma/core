@@ -150,7 +150,7 @@ sal_Bool SAL_CALL CDOTransferable::isDataFlavorSupported( const DataFlavor& aFla
 }
 
 // helper function
-// the list of datafalvors currently on the clipboard will be initialized
+// the list of dataflavors currently on the clipboard will be initialized
 // only once; if the client of this Transferable will hold a reference
 // to it und the underlying clipboard content changes, the client does
 // possible operate on a invalid list
