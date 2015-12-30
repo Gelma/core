@@ -2214,7 +2214,7 @@ void Desktop::OpenClients()
     // The reason behind: AutoSave/EmergencySave/AutoRecovery share the same data.
     // But the require that all documents, which are saved as backup should exists inside
     // memory. May be this mechanism will be inconsistent if the configuration exists...
-    // but no document inside memory corrspond to this data.
+    // but no document inside memory corresponds to this data.
     // Further it's not acceptable to recover such documents without any UI. It can
     // need some time, where the user wont see any results and wait for finishing the office startup...
     bool bAllowRecoveryAndSessionManagement = ( !rArgs.IsNoRestore() ) && ( !rArgs.IsHeadless()  );
