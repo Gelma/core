@@ -284,7 +284,7 @@ void E3dObject::TakeObjInfo(SdrObjTransformInfoRec& rInfo) const
     // At first not only possible, because the creation of a group of
     // 2D polygons would be required which need to be sorted by depth,
     // ie at intersections be cut relative to each other. Also the texture
-    // coorinates were an unsolved problem.
+    // coordinates were an unsolved problem.
     rInfo.bCanConvToPoly = false;
     rInfo.bCanConvToContour = false;
     rInfo.bCanConvToPathLineToArea = false;
