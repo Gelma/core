@@ -368,7 +368,7 @@ public:
 
         [Cross-reference]
 
-        StarView SystemWindow::Dectivate(bool)
+        StarView SystemWindow::Deactivate(bool)
         */
     virtual void                Deactivate(bool bMDI);
 
