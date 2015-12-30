@@ -38,11 +38,9 @@ public class IteratorLCSAlgorithm implements DiffAlgorithm {
         int orgSeqlen = orgSeq.elementCount();
         int modSeqlen = modSeq.elementCount();
 
-        int[][] diffTable;
-
         // Diff table is used to keep track which element is the same or not
         // in those 2 sequences
-        diffTable = createDiffTable(orgSeq, modSeq);
+        int[][] diffTable = createDiffTable(orgSeq, modSeq);
 
         // debug purpose...
         if (Debug.isFlagSet(Debug.INFO)) {
@@ -53,17 +51,10 @@ public class IteratorLCSAlgorithm implements DiffAlgorithm {
 
         generateResult(diffTable, orgSeqlen, modSeqlen, diffResult);
 
-        Difference[] diffArray = new Difference[0];
-
         // convert the vector to array, it has to do in here as
         // generateResult is called recursively
-        if (diffResult.size() > 0) {
-            diffArray = new Difference[diffResult.size()];
-            diffResult.toArray(diffArray);
-        }
-
-        diffTable = null;
-        diffResult = null;
+        Difference[] diffArray = new Difference[diffResult.size()];
+        diffResult.toArray(diffArray);
 
         return diffArray;
     }
@@ -75,14 +66,12 @@ public class IteratorLCSAlgorithm implements DiffAlgorithm {
      */
     private void printDiffTable(int[][] diffTable) {
 
-        String tmpString = "";
-
         for (int i = 0; i < diffTable.length; i++) {
+            StringBuilder sb = new StringBuilder();
             for (int j = 0; j < diffTable[i].length; j++) {
-               tmpString = tmpString + " " + diffTable[i][j] +  " ";
+               sb.append(" ").append(diffTable[i][j]).append(" ");
             }
-            Debug.log(Debug.INFO, tmpString);
-            tmpString = "";
+            Debug.log(Debug.INFO, sb.toString());
         }
     }
 
