@@ -1537,7 +1537,7 @@ void Bridge::map_to_cli(
         //create the type
         System::Type^ cliType= loadCliType(td.get()->pTypeName);
         //detect if we recursivly convert inherited structures
-        //If this point is reached because of a recursive call during convering a
+        //If this point is reached because of a recursive call during covering a
         //struct then we must not create a new object rather we use the one in
         // cli_data argument.
         System::Object^ cliObj;
