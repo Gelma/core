@@ -253,7 +253,7 @@ friend class OInterfaceIteratorHelper;
         SAL_DELETED_FUNCTION;
 
     /*
-      Duplicate content of the conaitner and release the old one without destroying.
+      Duplicate content of the container and release the old one without destroying.
       The mutex must be locked and the memberbInUse must be true.
      */
     void copyAndResetInUse();
