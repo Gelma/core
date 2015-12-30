@@ -720,7 +720,7 @@ namespace dbtools
         @param  _rxContext
             Used to create the drivermanager.
         @return
-            The datadefintion object.
+            The datadefinition object.
     */
     OOO_DLLPUBLIC_DBTOOLS css::uno::Reference< css::sdbcx::XTablesSupplier> getDataDefinitionByURLAndConnection(
             const OUString& _rsUrl,
