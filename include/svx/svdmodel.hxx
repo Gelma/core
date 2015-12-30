@@ -205,7 +205,7 @@ protected:
     bool                bTransparentTextFrames:1;
     bool                bSaveCompressed:1;
     bool                bSwapGraphics:1;
-    bool                bPasteResize:1; // Objects are beingresized due to Paste with different MapMode
+    bool                bPasteResize:1; // Objects are being resized due to Paste with different MapMode
     bool                bSaveOLEPreview:1;      // save preview metafile of OLE objects
     bool                bSaveNative:1;
     bool                bStarDrawPreviewMode:1;

@@ -25,7 +25,7 @@ GAC and if the policy files are correct. The office must be installed with compl
 system integration. That is, one does not use setup /a for starting the
 installation.
 
-In OOo 3.0 there was a breanking change so that the test created for previous
+In OOo 3.0 there was a breaking change so that the test created for previous
 version do not work anymore. To use these old tests one needs to install a
 version of OOo less than v 3.0. Then one needs to check out the cli_ure module
 for that version. The tests are contained in cli_ure/qa/versioning.

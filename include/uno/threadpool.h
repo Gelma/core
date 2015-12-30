@@ -143,7 +143,7 @@ uno_threadpool_detach( uno_ThreadPool hPool ) SAL_THROW_EXTERN_C();
                    uno_threadpool_enter().
   @param doRequest The function, that shall be called to execute the request.
                    0 if pJob is a reply.
-  @param bIsOneway True, if the request is asynchrons. False, if it is synchronous.
+  @param bIsOneway True, if the request is asynchronous. False, if it is synchronous.
                    Set to sal_False, if pJob is a reply.
  */
 CPPU_DLLPUBLIC void SAL_CALL

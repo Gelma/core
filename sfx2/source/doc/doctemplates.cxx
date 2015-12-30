@@ -615,7 +615,7 @@ bool SfxDocTplService_Impl::needsUpdate()
         aValue >>= bNeedsUpdate;
 
     // the old template component also checks this state, but it is initialized from this component
-    // so if this componend was already updated the old component does not need such an update
+    // so if this component was already updated the old component does not need such an update
     ::svt::TemplateFolderCache aTempCache;
     if ( !bNeedsUpdate )
         bNeedsUpdate = aTempCache.needsUpdate();

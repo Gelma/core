@@ -108,7 +108,7 @@ namespace {
 
     @descr  Because some operations are forced to be executed asynchronously
             (e.g. requested by our CreashSave/Recovery dialog) ... we must make sure
-            that these information wont be set as "normal" members of our AtoRecovery
+            that these information wont be set as "normal" members of our AutoRecovery
             instance. Otherwise they can disturb our normal AutoSave-timer handling.
             e.g. it can be unclear then, which progress has to be used for storing documents ...
  */

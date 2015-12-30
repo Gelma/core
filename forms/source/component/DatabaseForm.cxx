@@ -2700,7 +2700,7 @@ bool ODatabaseForm::canShareConnection( const Reference< XPropertySet >& _rxPare
 
 void ODatabaseForm::doShareConnection( const Reference< XPropertySet >& _rxParentProps )
 {
-    // get the conneciton of the parent
+    // get the connection of the parent
     Reference< XConnection > xParentConn;
     _rxParentProps->getPropertyValue( PROPERTY_ACTIVE_CONNECTION ) >>= xParentConn;
     OSL_ENSURE( xParentConn.is(), "ODatabaseForm::doShareConnection: we're a valid sub-form, but the parent has no connection?!" );

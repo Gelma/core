@@ -2506,7 +2506,7 @@ void SmMatrixNode::Arrange(OutputDevice &rDev, const SmFormat &rFormat)
         }
     }
 
-    // norm distance from which the following two are calcutated
+    // norm distance from which the following two are calculated
     const long  nNormDist = 3 * GetFont().GetSize().Height();
 
     // define horizontal and vertical minimal distances that separate

@@ -5619,7 +5619,7 @@ static OString impl_NumberingType( sal_uInt16 nNumberingType )
     return aType;
 }
 
-// Convertig Level Numbering Format Code to string
+// Converting Level Numbering Format Code to string
 static OString impl_LevelNFC( sal_uInt16 nNumberingType , const SfxItemSet *pOutSet)
 {
     OString aType;

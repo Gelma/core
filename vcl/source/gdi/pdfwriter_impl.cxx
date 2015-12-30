@@ -5593,7 +5593,7 @@ bool PDFWriterImpl::emitWidgetAnnotations()
             else if( rWidget.m_nTextStyle & DrawTextFlags::Right )
                 aLine.append( "/Q 2\n" );
         }
-        // appearance charactristics for terminal fields
+        // appearance characteristics for terminal fields
         // which are supposed to have an appearance constructed
         // by the viewer application
         if( !rWidget.m_aMKDict.isEmpty() )

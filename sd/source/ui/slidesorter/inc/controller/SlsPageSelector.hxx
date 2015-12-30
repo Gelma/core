@@ -65,7 +65,7 @@ public:
     void GetCoreSelection();
 
     /** Update the selection state of the SdPage objects to be the same as
-        that of the correspinding page descriptors.
+        that of the corresponding page descriptors.
     */
     void SetCoreSelection();
 

@@ -907,7 +907,7 @@ void SVTXFormattedField::setProperty( const OUString& PropertyName, const css::u
                         // no double
                         if (Value.hasValue())
                         {   // but a value
-                            // try if it is something converitble
+                            // try if it is something convertible
                             sal_Int32 nValue = 0;
                             if (!(Value >>= nValue))
                                 throw css::lang::IllegalArgumentException();

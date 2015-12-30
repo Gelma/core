@@ -2846,7 +2846,7 @@ void DffPropertyReader::ImportGradientColor( SfxItemSet& aSet,MSO_FillType eMSO_
     aGrad.SetStartIntens( 100 );
     aGrad.SetEndIntens( 100 );
     aSet.Put( XFillGradientItem( OUString(), aGrad ) );
-    //Construct tranparency item. This item can coodinate with both solid and gradient.
+    //Construct tranparency item. This item can coordinate with both solid and gradient.
     if ( dTrans < 1.0 || dBackTrans < 1.0 )
     {
         sal_uInt8 nStartCol = (sal_uInt8)( (1 - dTrans )* 255 );

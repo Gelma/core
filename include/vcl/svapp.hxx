@@ -159,7 +159,7 @@ public:
         aData.push_back(data);
     }
 
-    /** Constructor for ApplicationEvnet, accepts an array of strings for
+    /** Constructor for ApplicationEvent, accepts an array of strings for
      the data associated with the event.
 
      @attention TYPE_OPEN and TYPE_PRINT can apply to multiple documents,

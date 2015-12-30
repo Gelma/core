@@ -773,7 +773,7 @@ namespace basegfx
 
                     // we need to clip this triangle against the output rectangle
                     // to ensure that the resulting texture coordinates are in
-                    // the valid range from [0<=st<=1]. under normal circustances
+                    // the valid range from [0<=st<=1]. under normal circumstances
                     // we could use the BORDERCOLOR renderstate but some cards
                     // seem to ignore this feature.
                     ::basegfx::B2DPoint stack[3];
