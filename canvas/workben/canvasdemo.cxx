@@ -126,7 +126,7 @@ class DemoRenderer
             maRenderState.AffineTransform = aUnit;
             maRenderState.DeviceColor = maColorBlack;
 
-            //I can't figure out what the compsiteoperation stuff does
+            //I can't figure out what the compositeoperation stuff does
             //it doesn't seem to do anything in either VCL or cairocanvas
             //I was hoping that CLEAR would clear the canvas before we paint,
             //but nothing changes
