@@ -1857,7 +1857,7 @@ SdrObject* SdrPowerPointImport::ImportOLE( long nOLEId,
                             sal_uInt8 aTestA[ 10 ];
                             bool bGetItAsOle = ( sizeof( aTestA ) == xSrcTst->Read( aTestA, sizeof( aTestA ) ) );
                             if ( !bGetItAsOle )
-                            {   // maybe there is a contentsstream in here
+                            {   // maybe there is a contents stream in here
                                 xSrcTst = xObjStor->OpenSotStream( "Contents", STREAM_READWRITE | StreamMode::NOCREATE );
                                 bGetItAsOle = ( xSrcTst.Is() && sizeof( aTestA ) == xSrcTst->Read( aTestA, sizeof( aTestA ) ) );
                             }
