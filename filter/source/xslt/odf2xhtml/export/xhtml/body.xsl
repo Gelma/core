@@ -2775,7 +2775,7 @@
 
 	<!-- Hidden text dependent on Office variables:
 		 The text is not shown, if condition is 'true'.
-		 Implemented solely for conditons as '<VARIABLE>==0' or '<VARIABLE>==1'
+		 Implemented solely for conditions as '<VARIABLE>==0' or '<VARIABLE>==1'
 	-->
 	<xsl:key match="text:variable-set" name="varSet" use="@text:name"/>
 	<xsl:template match="text:hidden-text">
