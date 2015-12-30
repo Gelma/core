@@ -1471,7 +1471,7 @@ static void allocTrueTypeFont( TrueTypeFont** ttf )
     }
 }
 
-/* forward declariotn for the two entry points to use*/
+/* forward declaration for the two entry points to use*/
 static int doOpenTTFont( sal_uInt32 facenum, TrueTypeFont* t );
 
 #if !defined(WIN32)
