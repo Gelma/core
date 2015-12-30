@@ -41,7 +41,7 @@ Once the row is not blank (thus, the user entered data...),
 a new blank row is added.<br/>
 Once the user removes the last *unempty* row, binsertRowy deleting its data, it becomes
 the *last empty row* and the one after is being automatically removed.<br/><br/>
-The contorl shows 5 rows at a time.<br/>
+The control shows 5 rows at a time.<br/>
 If, for example, only 2 rows exist (from which the 2ed one is empty...)
 then the other three rows, which do not exist in the data model, are disabled.
 <br/>
