@@ -1962,7 +1962,7 @@ Any  IUnknownWrapper_Impl::invokeWithDispIdComTlb(FuncDesc& aFuncDesc,
                 //Basic:  obj.func() ' first parameter left out because it is optional
                 else if (paramFlags & PARAMFLAG_FHASDEFAULT)
                 {
-                    //optional arg with defaulteithter as direct arg : VT_XXX or
+                    //optional arg with default either as direct arg : VT_XXX or
                     VariantCopy( & arArgs[revIndex],
                         & aFuncDesc->lprgelemdescParam[i].paramdesc.
                             pparamdescex->varDefaultValue);
