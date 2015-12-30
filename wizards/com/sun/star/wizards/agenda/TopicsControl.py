@@ -367,7 +367,7 @@ class TopicsControl(ControlScroller):
                 if (guiRow + self.nscrollvalue) \
                         == len(self.scrollfields) - 2:
                     self.removeLastRow()
-                    '''now consequentially check the last two rows,
+                    '''now consequently check the last two rows,
                     and remove the last one if they are both empty.
                     (actually I check always the "before last" row,
                     because the last one is always empty...
