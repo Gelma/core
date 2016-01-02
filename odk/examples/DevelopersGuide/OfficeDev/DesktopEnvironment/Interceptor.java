@@ -626,7 +626,7 @@ public class Interceptor implements com.sun.star.frame.XFrameActionListener,
 
         // it's a good idea to cancel listening for frame action events
         // before(!) we deregister us as an interceptor.
-        // Because registration and deregistratio nof interceptor objects
+        // Because registration and deregistration of interceptor objects
         // will force sending of frame action events...!
         if (bIsActionListener)
             xFrame.removeFrameActionListener(this);
