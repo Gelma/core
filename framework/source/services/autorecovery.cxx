@@ -662,7 +662,7 @@ private:
         @param  bStopListening
                 sal_False: must be used in case this method is called within disposing() of the document,
                        where it make no sense to deregister our listener. The container dies...
-                sal_True : must be used in case this method is used on "dergistration" of this document, where
+                sal_True : must be used in case this method is used on "deregistration" of this document, where
                        we must deregister our listener .-)
 
         @threadsafe
