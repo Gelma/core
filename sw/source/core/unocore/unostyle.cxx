@@ -359,11 +359,6 @@ public:
     void Invalidate();
     void ApplyDescriptorProperties();
     void SetStyleName(const OUString& rSet){ m_sStyleName = rSet;}
-    virtual const SwTextFormatColl* GetFormatColl() const
-    {
-        assert(m_rEntry.m_eFamily == SFX_STYLE_FAMILY_PARA);
-        return m_pDoc->FindTextFormatCollByName(GetStyleName());
-    }
 };
 
 class SwXFrameStyle
@@ -942,7 +937,7 @@ static const std::vector<StyleFamilyEntry>* lcl_GetStyleFamilyEntries()
             { SFX_STYLE_FAMILY_PARA,   PROPERTY_MAP_PARA_STYLE,  nsSwGetPoolIdFromName::GET_POOLID_TXTCOLL,  "ParagraphStyles", STR_STYLE_FAMILY_PARAGRAPH, &lcl_GetCountOrName<SFX_STYLE_FAMILY_PARA>,   &lcl_CreateStyle<SFX_STYLE_FAMILY_PARA>,   &lcl_TranslateIndex<SFX_STYLE_FAMILY_PARA>                       },
             { SFX_STYLE_FAMILY_PAGE,   PROPERTY_MAP_PAGE_STYLE,  nsSwGetPoolIdFromName::GET_POOLID_PAGEDESC, "PageStyles",      STR_STYLE_FAMILY_PAGE,      &lcl_GetCountOrName<SFX_STYLE_FAMILY_PAGE>,   &lcl_CreateStyle<SFX_STYLE_FAMILY_PAGE>,   &lcl_TranslateIndexRange<RES_POOLPAGE_BEGIN,    nPoolPageRange>  },
             { SFX_STYLE_FAMILY_FRAME,  PROPERTY_MAP_FRAME_STYLE, nsSwGetPoolIdFromName::GET_POOLID_FRMFMT,   "FrameStyles",     STR_STYLE_FAMILY_FRAME,     &lcl_GetCountOrName<SFX_STYLE_FAMILY_FRAME>,  &lcl_CreateStyle<SFX_STYLE_FAMILY_FRAME>,  &lcl_TranslateIndexRange<RES_POOLFRM_BEGIN,     nPoolFrameRange> },
-            { SFX_STYLE_FAMILY_PSEUDO, PROPERTY_MAP_NUM_STYLE, nsSwGetPoolIdFromName::GET_POOLID_NUMRULE,  "NumberingStyles", STR_STYLE_FAMILY_NUMBERING, &lcl_GetCountOrName<SFX_STYLE_FAMILY_PSEUDO>, &lcl_CreateStyle<SFX_STYLE_FAMILY_PSEUDO>, &lcl_TranslateIndexRange<RES_POOLNUMRULE_BEGIN, nPoolNumRange>   }
+            { SFX_STYLE_FAMILY_PSEUDO, PROPERTY_MAP_NUM_STYLE,   nsSwGetPoolIdFromName::GET_POOLID_NUMRULE,  "NumberingStyles", STR_STYLE_FAMILY_NUMBERING, &lcl_GetCountOrName<SFX_STYLE_FAMILY_PSEUDO>, &lcl_CreateStyle<SFX_STYLE_FAMILY_PSEUDO>, &lcl_TranslateIndexRange<RES_POOLNUMRULE_BEGIN, nPoolNumRange>   }
        };
     }
     return our_pStyleFamilyEntries;
@@ -1318,91 +1313,92 @@ void SwXStyle::ApplyDescriptorProperties()
 class SwStyleBase_Impl
 {
 private:
-    SwDoc& mrDoc;
-    const SwPageDesc* mpOldPageDesc;
-    rtl::Reference< SwDocStyleSheet > mxNewBase;
-    SfxItemSet* mpItemSet;
-    OUString mrStyleName;
-    const SwAttrSet*                    mpParentStyle;
-
+    SwDoc& m_rDoc;
+    const SwPageDesc* m_pOldPageDesc;
+    rtl::Reference<SwDocStyleSheet> m_xNewBase;
+    SfxItemSet* m_pItemSet;
+    std::unique_ptr<SfxItemSet> m_pMyItemSet;
+    OUString m_rStyleName;
+    const SwAttrSet* m_pParentStyle;
 public:
     SwStyleBase_Impl(SwDoc& rSwDoc, const OUString& rName, const SwAttrSet* pParentStyle)
-        : mrDoc(rSwDoc)
-        , mpOldPageDesc(nullptr)
-        , mpItemSet(nullptr)
-        , mrStyleName(rName)
-        , mpParentStyle(pParentStyle)
-    {
-    }
+        : m_rDoc(rSwDoc)
+        , m_pOldPageDesc(nullptr)
+        , m_pItemSet(nullptr)
+        , m_pMyItemSet(nullptr)
+        , m_rStyleName(rName)
+        , m_pParentStyle(pParentStyle)
+    { }
 
-    ~SwStyleBase_Impl()
+    rtl::Reference<SwDocStyleSheet>& getNewBase()
     {
-        delete mpItemSet;
-    }
-
-    rtl::Reference< SwDocStyleSheet >& getNewBase()
-    {
-        return mxNewBase;
+        return m_xNewBase;
     }
 
     void setNewBase(SwDocStyleSheet* pNew)
     {
-        mxNewBase = pNew;
+        m_xNewBase = pNew;
     }
 
     bool HasItemSet() const
     {
-        return mxNewBase.is();
-    }
-
-    SfxItemSet* replaceItemSet(SfxItemSet* pNew)
-    {
-        SfxItemSet* pRetval = mpItemSet;
-        mpItemSet = pNew;
-        return pRetval;
+        return m_xNewBase.is();
     }
 
     SfxItemSet& GetItemSet()
     {
-        OSL_ENSURE(mxNewBase.is(), "no SwDocStyleSheet available");
-        if (!mpItemSet)
+        assert(m_xNewBase.is());
+        if(!m_pItemSet)
         {
-            mpItemSet = new SfxItemSet(mxNewBase->GetItemSet());
+            m_pMyItemSet.reset(new SfxItemSet(m_xNewBase->GetItemSet()));
+            m_pItemSet = m_pMyItemSet.get();
 
             //UUUU set parent style to have the correct XFillStyle setting as XFILL_NONE
-            if(!mpItemSet->GetParent() && mpParentStyle)
-            {
-                mpItemSet->SetParent(mpParentStyle);
-            }
+            if(!m_pItemSet->GetParent() && m_pParentStyle)
+                m_pItemSet->SetParent(m_pParentStyle);
         }
-        return *mpItemSet;
+        return *m_pItemSet;
     }
 
     const SwPageDesc* GetOldPageDesc();
+
+    // still a hack, but a bit more explicit and with a proper scope
+    struct ItemSetOverrider
+    {
+        SwStyleBase_Impl& m_rStyleBase;
+        SfxItemSet* m_pOldSet;
+        ItemSetOverrider(SwStyleBase_Impl& rStyleBase, SfxItemSet* pTemp)
+                : m_rStyleBase(rStyleBase)
+                , m_pOldSet(m_rStyleBase.m_pItemSet)
+        { m_rStyleBase.m_pItemSet = pTemp; }
+        ~ItemSetOverrider()
+        { m_rStyleBase.m_pItemSet = m_pOldSet; };
+    };
 };
 
 const SwPageDesc* SwStyleBase_Impl::GetOldPageDesc()
 {
-    if(!mpOldPageDesc)
+    if(!m_pOldPageDesc)
     {
-        SwPageDesc *pd = mrDoc.FindPageDesc( mrStyleName );
-        if( pd )
-            mpOldPageDesc = pd;
+        SwPageDesc *pd = m_rDoc.FindPageDesc(m_rStyleName);
+        if(pd)
+            m_pOldPageDesc = pd;
 
-        if(!mpOldPageDesc)
+        if(!m_pOldPageDesc)
         {
             for(sal_uInt16 i = RC_POOLPAGEDESC_BEGIN; i <= STR_POOLPAGE_LANDSCAPE; ++i)
             {
-                if(SW_RESSTR(i) == mrStyleName)
+                if(SW_RESSTR(i) == m_rStyleName)
                 {
-                    mpOldPageDesc = mrDoc.getIDocumentStylePoolAccess().GetPageDescFromPool( static_cast< sal_uInt16 >(RES_POOLPAGE_BEGIN + i - RC_POOLPAGEDESC_BEGIN) );
+                    m_pOldPageDesc = m_rDoc.getIDocumentStylePoolAccess().GetPageDescFromPool( static_cast<sal_uInt16>(RES_POOLPAGE_BEGIN + i - RC_POOLPAGEDESC_BEGIN));
                     break;
                 }
             }
         }
     }
-    return mpOldPageDesc;
+    return m_pOldPageDesc;
 }
+
 
 static void lcl_SetStyleProperty(const SfxItemPropertySimpleEntry& rEntry,
                         const SfxItemPropertySet& rPropSet,
@@ -1987,29 +1983,12 @@ void SAL_CALL SwXStyle::SetPropertyValues_Impl(
            lang::IllegalArgumentException, lang::WrappedTargetException,
            uno::RuntimeException, std::exception)
 {
-    if ( !m_pDoc )
+    if(!m_pDoc)
         throw uno::RuntimeException();
-
-    sal_Int8 nPropSetId = PROPERTY_MAP_CHAR_STYLE;
-
-    switch(m_rEntry.m_eFamily)
-    {
-        case SFX_STYLE_FAMILY_PARA  : nPropSetId = m_bIsConditional ? PROPERTY_MAP_CONDITIONAL_PARA_STYLE : PROPERTY_MAP_PARA_STYLE; break;
-        case SFX_STYLE_FAMILY_FRAME : nPropSetId = PROPERTY_MAP_FRAME_STYLE ;break;
-        case SFX_STYLE_FAMILY_PAGE  : nPropSetId = PROPERTY_MAP_PAGE_STYLE  ;break;
-        case SFX_STYLE_FAMILY_PSEUDO: nPropSetId = PROPERTY_MAP_NUM_STYLE   ;break;
-        default: ;
-    }
-    const SfxItemPropertySet* pPropSet = aSwMapProvider.GetPropertySet(nPropSetId);
+    const SfxItemPropertySet* pPropSet = aSwMapProvider.GetPropertySet(m_rEntry.m_nPropMapType);
     const SfxItemPropertyMap &rMap = pPropSet->getPropertyMap();
-
     if(rPropertyNames.getLength() != rValues.getLength())
-    {
         throw lang::IllegalArgumentException();
-    }
-
-    const OUString* pNames = rPropertyNames.getConstArray();
-    const uno::Any* pValues = rValues.getConstArray();
 
     SwStyleBase_Impl aBaseImpl(*m_pDoc, m_sStyleName, &GetDoc()->GetDfltTextFormatColl()->GetAttrSet()); //UUUU add pDfltTextFormatColl as parent
     if(m_pBasePool)
@@ -2017,23 +1996,23 @@ void SAL_CALL SwXStyle::SetPropertyValues_Impl(
         const sal_uInt16 nSaveMask = m_pBasePool->GetSearchMask();
         m_pBasePool->SetSearchMask(m_rEntry.m_eFamily);
         SfxStyleSheetBase* pBase = m_pBasePool->Find(m_sStyleName);
-        m_pBasePool->SetSearchMask(m_rEntry.m_eFamily, nSaveMask );
-        OSL_ENSURE(pBase, "where is the style?" );
+        m_pBasePool->SetSearchMask(m_rEntry.m_eFamily, nSaveMask);
+        OSL_ENSURE(pBase, "where is the style?");
         if(pBase)
             aBaseImpl.setNewBase(new SwDocStyleSheet(*static_cast<SwDocStyleSheet*>(pBase)));
         else
             throw uno::RuntimeException();
     }
 
+    const OUString* pNames = rPropertyNames.getConstArray();
+    const uno::Any* pValues = rValues.getConstArray();
     for(sal_Int32 nProp = 0; nProp < rPropertyNames.getLength(); ++nProp)
     {
         const SfxItemPropertySimpleEntry* pEntry = rMap.getByName(pNames[nProp]);
-
-        if(!pEntry ||
-           (!m_bIsConditional && pNames[nProp] == UNO_NAME_PARA_STYLE_CONDITIONS))
-            throw beans::UnknownPropertyException("Unknown property: " + pNames[nProp], static_cast < cppu::OWeakObject * > ( this ) );
-        if ( pEntry->nFlags & beans::PropertyAttribute::READONLY)
-            throw beans::PropertyVetoException ("Property is read-only: " + pNames[nProp], static_cast < cppu::OWeakObject * > ( this ) );
+        if(!pEntry || (!m_bIsConditional && pNames[nProp] == UNO_NAME_PARA_STYLE_CONDITIONS))
+            throw beans::UnknownPropertyException("Unknown property: " + pNames[nProp], static_cast<cppu::OWeakObject*>(this));
+        if(pEntry->nFlags & beans::PropertyAttribute::READONLY)
+            throw beans::PropertyVetoException ("Property is read-only: " + pNames[nProp], static_cast<cppu::OWeakObject*>(this));
         if(aBaseImpl.getNewBase().is())
         {
             lcl_SetStyleProperty(*pEntry, *pPropSet, pValues[nProp], aBaseImpl, m_pBasePool, m_pDoc, m_rEntry.m_eFamily);
@@ -3085,9 +3064,10 @@ static void lcl_putItemToSet(const SvxSetItem* pSetItem, const SfxItemPropertySe
 
     // replace the used SfxItemSet at the SwStyleBase_Impl temporarily and use the
     // default method to set the property
-    SfxItemSet* pRememberItemSet = rBaseImpl.replaceItemSet(&rSetSet);
-    lcl_SetStyleProperty(rEntry, rPropSet, rVal, rBaseImpl, pPool, pDoc, eFamily);
-    rBaseImpl.replaceItemSet(pRememberItemSet);
+    {
+        SwStyleBase_Impl::ItemSetOverrider o(rBaseImpl, &rSetSet);
+        lcl_SetStyleProperty(rEntry, rPropSet, rVal, rBaseImpl, pPool, pDoc, eFamily);
+    }
 
     // reset paret at ItemSet from SetItem
     rSetSet.SetParent(nullptr);
@@ -3288,9 +3268,10 @@ void SAL_CALL SwXPageStyle::SetPropertyValues_Impl(
 
                             // replace the used SfxItemSet at the SwStyleBase_Impl temporarily and use the
                             // default method to set the property
-                            SfxItemSet* pRememberItemSet = aBaseImpl.replaceItemSet(&rSetSet);
-                            lcl_SetStyleProperty(*pEntry, *pPropSet, pValues[nProp], aBaseImpl, m_pBasePool, GetDoc(), GetFamily());
-                            aBaseImpl.replaceItemSet(pRememberItemSet);
+                            {
+                                SwStyleBase_Impl::ItemSetOverrider o(aBaseImpl, &rSetSet);
+                                lcl_SetStyleProperty(*pEntry, *pPropSet, pValues[nProp], aBaseImpl, m_pBasePool, GetDoc(), GetFamily());
+                            }
 
                             // reset paret at ItemSet from SetItem
                             rSetSet.SetParent(nullptr);
@@ -3479,9 +3460,10 @@ uno::Sequence< uno::Any > SAL_CALL SwXPageStyle::GetPropertyValues_Impl(
                         {
                             // get from SfxItemSet of the corresponding SfxSetItem
                             const SfxItemSet& rSetSet = pSetItem->GetItemSet();
-                            SfxItemSet* pRememberItemSet = aBase.replaceItemSet(&const_cast< SfxItemSet& >(rSetSet));
-                            pRet[nProp] = lcl_GetStyleProperty(*pEntry, *pPropSet, aBase, pBase, GetFamily(), GetDoc() );
-                            aBase.replaceItemSet(pRememberItemSet);
+                            {
+                                SwStyleBase_Impl::ItemSetOverrider o(aBase, &const_cast< SfxItemSet& >(rSetSet));
+                                pRet[nProp] = lcl_GetStyleProperty(*pEntry, *pPropSet, aBase, pBase, GetFamily(), GetDoc());
+                            }
                         }
                         else if(pEntry->nWID == SID_ATTR_PAGE_ON)
                         {
@@ -3549,9 +3531,10 @@ uno::Sequence< uno::Any > SAL_CALL SwXPageStyle::GetPropertyValues_Impl(
                         {
                             // set at SfxItemSet of the corresponding SfxSetItem
                             const SfxItemSet& rSetSet = pSetItem->GetItemSet();
-                            SfxItemSet* pRememberItemSet = aBase.replaceItemSet(&const_cast< SfxItemSet& >(rSetSet));
-                            pRet[nProp] = lcl_GetStyleProperty(*pEntry, *pPropSet, aBase, pBase, GetFamily(), GetDoc() );
-                            aBase.replaceItemSet(pRememberItemSet);
+                            {
+                                SwStyleBase_Impl::ItemSetOverrider o(aBase, &const_cast<SfxItemSet&>(rSetSet));
+                                pRet[nProp] = lcl_GetStyleProperty(*pEntry, *pPropSet, aBase, pBase, GetFamily(), GetDoc());
+                            }
                         }
                     }
                     else

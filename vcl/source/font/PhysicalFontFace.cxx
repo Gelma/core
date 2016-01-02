@@ -25,11 +25,10 @@
 
 #include "PhysicalFontFace.hxx"
 
-PhysicalFontFace::PhysicalFontFace( const ImplDevFontAttributes& rDFA, int nMagic )
-    : ImplDevFontAttributes( rDFA )
+PhysicalFontFace::PhysicalFontFace( const ImplFontAttributes& rDFA )
+    : ImplFontAttributes( rDFA )
     , mnWidth(0)
     , mnHeight(0)
-    , mnMagic( nMagic )
 {
     // StarSymbol is a unicode font, but it still deserves the symbol flag
     if( !IsSymbolFont() )
@@ -158,7 +157,7 @@ bool PhysicalFontFace::IsBetterMatch( const FontSelectPattern& rFSD, FontMatchSt
             nMatch += 600;
     }
 
-    if( mbDevice )
+    if( IsBuiltInFont() )
         nMatch += 1;
 
     int nHeightMatch = 0;

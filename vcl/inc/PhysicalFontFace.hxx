@@ -63,37 +63,32 @@ public:
 //      Instead, the logical font names are mapped to physical fonts by
 //      the Java runtime environment.
 
-class VCL_PLUGIN_PUBLIC PhysicalFontFace : public ImplDevFontAttributes
+class VCL_PLUGIN_PUBLIC PhysicalFontFace : public ImplFontAttributes
 {
 public:
+    virtual                ~PhysicalFontFace() {}
+
     // by using an PhysicalFontFace object as a factory for its corresponding
     // ImplFontEntry an ImplFontEntry can be extended to cache device and
     // font instance specific data
     virtual ImplFontEntry*  CreateFontInstance( FontSelectPattern& ) const = 0;
+    virtual PhysicalFontFace* Clone() const = 0;
 
     int                     GetHeight() const           { return mnHeight; }
     int                     GetWidth() const            { return mnWidth; }
     virtual sal_IntPtr      GetFontId() const = 0;
-    int                     GetFontMagic() const        { return mnMagic; }
     bool                    IsScalable() const          { return (mnHeight == 0); }
-    bool                    CheckMagic( int n ) const   { return (n == mnMagic); }
 
     bool                    IsBetterMatch( const FontSelectPattern&, FontMatchStatus& ) const;
     sal_Int32               CompareWithSize( const PhysicalFontFace& ) const;
     sal_Int32               CompareIgnoreSize( const PhysicalFontFace& ) const;
-    virtual                ~PhysicalFontFace() {}
-    virtual PhysicalFontFace* Clone() const = 0;
 
 protected:
-    explicit                PhysicalFontFace( const ImplDevFontAttributes&, int nMagic );
+    explicit                PhysicalFontFace( const ImplFontAttributes& );
     void                    SetBitmapSize( int nW, int nH ) { mnWidth=nW; mnHeight=nH; }
 
     long                    mnWidth;    // Width (in pixels)
     long                    mnHeight;   // Height (in pixels)
-
-private:
-friend class PhysicalFontFamily;
-    const int               mnMagic;    // poor man's RTTI
 };
 
 #endif // INCLUDED_VCL_INC_PHYSICALFONTFACE_HXX

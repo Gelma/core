@@ -72,7 +72,7 @@ static bool bImplSalCourierScalable = false;
 static bool bImplSalCourierNew = false;
 
 // TODO: also support temporary TTC font files
-typedef std::map< OUString, ImplDevFontAttributes > FontAttrMap;
+typedef std::map< OUString, ImplFontAttributes > FontAttrMap;
 
 class ImplFontAttrCache
 {
@@ -92,8 +92,8 @@ public:
                               const OUString& rBaseURL);
             ~ImplFontAttrCache();
 
-    ImplDevFontAttributes  GetFontAttr( const OUString& rFontFileName ) const;
-    void                   AddFontAttr( const OUString& rFontFileName, const ImplDevFontAttributes& );
+    ImplFontAttributes  GetFontAttr( const OUString& rFontFileName ) const;
+    void                   AddFontAttr( const OUString& rFontFileName, const ImplFontAttributes& );
 };
 
 ImplFontAttrCache::ImplFontAttrCache( const OUString& rFileNameURL, const OUString& rBaseURL ) : aBaseURL( rBaseURL )
@@ -115,7 +115,7 @@ ImplFontAttrCache::ImplFontAttrCache( const OUString& rFileNameURL, const OUStri
 
     // read the cache entries from the file
     OUString aFontFileURL;
-    ImplDevFontAttributes aDFA;
+    ImplFontAttributes aDFA;
     for(;;)
     {
         aFontFileURL = read_uInt16_lenPrefixed_uInt8s_ToOUString(aCacheFile, RTL_TEXTENCODING_UTF8);
@@ -160,7 +160,7 @@ ImplFontAttrCache::~ImplFontAttrCache()
             while ( aIter != aFontAttributes.end() )
             {
                 const OUString rFontFileURL( (*aIter).first );
-                const ImplDevFontAttributes& rDFA( (*aIter).second );
+                const ImplFontAttributes& rDFA( (*aIter).second );
                 write_uInt16_lenPrefixed_uInt8s_FromOUString(aCacheFile, rFontFileURL, RTL_TEXTENCODING_UTF8);
                 write_uInt16_lenPrefixed_uInt8s_FromOUString(aCacheFile, rDFA.GetFamilyName(), RTL_TEXTENCODING_UTF8);
 
@@ -189,9 +189,9 @@ OUString ImplFontAttrCache::OptimizeURL( const OUString& rURL ) const
     return aOptimizedFontFileURL;
 }
 
-ImplDevFontAttributes ImplFontAttrCache::GetFontAttr( const OUString& rFontFileName ) const
+ImplFontAttributes ImplFontAttrCache::GetFontAttr( const OUString& rFontFileName ) const
 {
-    ImplDevFontAttributes aDFA;
+    ImplFontAttributes aDFA;
     FontAttrMap::const_iterator it = aFontAttributes.find( OptimizeURL( rFontFileName ) );
     if( it != aFontAttributes.end() )
     {
@@ -200,7 +200,7 @@ ImplDevFontAttributes ImplFontAttrCache::GetFontAttr( const OUString& rFontFileN
     return aDFA;
 }
 
-void ImplFontAttrCache::AddFontAttr( const OUString& rFontFileName, const ImplDevFontAttributes& rDFA )
+void ImplFontAttrCache::AddFontAttr( const OUString& rFontFileName, const ImplFontAttributes& rDFA )
 {
     SAL_WARN_IF(rFontFileName.isEmpty() || rDFA.GetFamilyName().isEmpty(),
         "vcl.gdi", "ImplFontNameCache::AddFontName - invalid data!");
@@ -769,10 +769,10 @@ inline BYTE ImplPitchToWin( FontPitch ePitch )
         return DEFAULT_PITCH;
 }
 
-static ImplDevFontAttributes WinFont2DevFontAttributes( const ENUMLOGFONTEXW& rEnumFont,
+static ImplFontAttributes WinFont2DevFontAttributes( const ENUMLOGFONTEXW& rEnumFont,
     const NEWTEXTMETRICW& rMetric, DWORD nFontType )
 {
-    ImplDevFontAttributes aDFA;
+    ImplFontAttributes aDFA;
 
     const LOGFONTW rLogFont = rEnumFont.elfLogFont;
 
@@ -798,32 +798,32 @@ static ImplDevFontAttributes WinFont2DevFontAttributes( const ENUMLOGFONTEXW& rE
         aDFA.SetStyleName(OUString(reinterpret_cast<const sal_Unicode*>(pStyleName)));
 
     // get device specific font attributes
-    aDFA.mbOrientation  = (nFontType & RASTER_FONTTYPE) == 0;
-    aDFA.mbDevice       = (rMetric.tmPitchAndFamily & TMPF_DEVICE) != 0;
+    aDFA.SetOrientationFlag( ((nFontType & RASTER_FONTTYPE) == 0) );
+    aDFA.SetBuiltInFontFlag( ((rMetric.tmPitchAndFamily & TMPF_DEVICE) != 0) );
 
-    aDFA.mbEmbeddable   = false;
-    aDFA.mbSubsettable  = false;
+    aDFA.SetEmbeddableFlag( false );
+    aDFA.SetSubsettableFlag( false );
     if( 0 != (rMetric.ntmFlags & (NTM_TT_OPENTYPE | NTM_PS_OPENTYPE))
      || 0 != (rMetric.tmPitchAndFamily & TMPF_TRUETYPE))
-        aDFA.mbSubsettable = true;
+        aDFA.SetSubsettableFlag( true );
     else if( 0 != (rMetric.ntmFlags & NTM_TYPE1) ) // TODO: implement subsetting for type1 too
-        aDFA.mbEmbeddable = true;
+        aDFA.SetEmbeddableFlag( true );
 
     // heuristics for font quality
     // -   standard-type1 > opentypeTT > truetype > non-standard-type1 > raster
     // -   subsetting > embedding > none
-    aDFA.mnQuality = 0;
+    aDFA.SetQuality( 0 );
     if( rMetric.tmPitchAndFamily & TMPF_TRUETYPE )
-        aDFA.mnQuality += 50;
+        aDFA.IncreaseQualityBy( 50 );
     if( 0 != (rMetric.ntmFlags & (NTM_TT_OPENTYPE | NTM_PS_OPENTYPE)) )
-        aDFA.mnQuality += 10;
-    if( aDFA.mbSubsettable )
-        aDFA.mnQuality += 200;
-    else if( aDFA.mbEmbeddable )
-        aDFA.mnQuality += 100;
+        aDFA.IncreaseQualityBy( 10 );
+    if( aDFA.CanSubset() )
+        aDFA.IncreaseQualityBy( 200 );
+    else if( aDFA.CanEmbed() )
+        aDFA.IncreaseQualityBy( 100 );
 
     // #i38665# prefer Type1 versions of the standard postscript fonts
-    if( aDFA.mbEmbeddable )
+    if( aDFA.CanEmbed() )
     {
         if( aDFA.GetFamilyName() == "AvantGarde"
         ||  aDFA.GetFamilyName() == "Bookman"
@@ -835,7 +835,7 @@ static ImplDevFontAttributes WinFont2DevFontAttributes( const ENUMLOGFONTEXW& rE
         ||  aDFA.GetFamilyName() == "Times"
         ||  aDFA.GetFamilyName() == "ZapfChancery"
         ||  aDFA.GetFamilyName() == "ZapfDingbats" )
-            aDFA.mnQuality += 500;
+            aDFA.IncreaseQualityBy( 500 );
     }
 
     // TODO: add alias names
@@ -993,9 +993,9 @@ const void * GrFontData::getTable(unsigned int name, size_t *len) const
 }
 #endif
 
-ImplWinFontData::ImplWinFontData( const ImplDevFontAttributes& rDFS,
+ImplWinFontData::ImplWinFontData( const ImplFontAttributes& rDFS,
     int nHeight, BYTE eWinCharSet, BYTE nPitchAndFamily )
-:   PhysicalFontFace( rDFS, 0 ),
+:   PhysicalFontFace( rDFS ),
     mnId( 0 ),
     mbHasKoreanRange( false ),
     mbHasCJKSupport( false ),
@@ -1694,22 +1694,22 @@ void ImplReleaseTempFonts( SalData& rSalData )
 }
 
 static bool ImplGetFontAttrFromFile( const OUString& rFontFileURL,
-    ImplDevFontAttributes& rDFA )
+    ImplFontAttributes& rDFA )
 {
     OUString aUSytemPath;
     OSL_VERIFY( !osl::FileBase::getSystemPathFromFileURL( rFontFileURL, aUSytemPath ) );
 
     // get FontAttributes from a *fot file
     // TODO: use GetTTGlobalFontInfo() to access the font directly
-    rDFA.mnQuality    = 1000;
-    rDFA.mbDevice     = true;
+    rDFA.SetQuality( 1000 );
+    rDFA.SetBuiltInFontFlag( true );
     rDFA.SetFamilyType(FAMILY_DONTKNOW);
     rDFA.SetWidthType(WIDTH_DONTKNOW);
     rDFA.SetWeight(WEIGHT_DONTKNOW);
     rDFA.SetItalic(ITALIC_DONTKNOW);
     rDFA.SetPitch(PITCH_DONTKNOW);
-    rDFA.mbSubsettable= true;
-    rDFA.mbEmbeddable = false;
+    rDFA.SetSubsettableFlag( true );
+    rDFA.SetEmbeddableFlag( false );
 
     // Create temporary file name
     char aFileName[] = "soAAT.fot";
@@ -1792,10 +1792,10 @@ bool WinSalGraphics::AddTempDevFont( PhysicalFontCollection* pFontCollection,
 {
     SAL_INFO( "vcl.gdi", "WinSalGraphics::AddTempDevFont(): " << OUStringToOString( rFontFileURL, RTL_TEXTENCODING_UTF8 ).getStr() );
 
-    ImplDevFontAttributes aDFA;
+    ImplFontAttributes aDFA;
     aDFA.SetFamilyName(rFontName);
-    aDFA.mnQuality    = 1000;
-    aDFA.mbDevice     = true;
+    aDFA.SetQuality( 1000 );
+    aDFA.SetBuiltInFontFlag( true );
 
     // Search Font Name in Cache
     if( rFontName.isEmpty() && mpFontAttrCache )
@@ -1825,11 +1825,11 @@ bool WinSalGraphics::AddTempDevFont( PhysicalFontCollection* pFontCollection,
     aDFA.SetWeight(WEIGHT_DONTKNOW);
     aDFA.SetItalic(ITALIC_DONTKNOW);
     aDFA.SetPitch(PITCH_DONTKNOW);
-    aDFA.mbSubsettable= true;
-    aDFA.mbEmbeddable = false;
+    aDFA.SetSubsettableFlag( true );
+    aDFA.SetEmbeddableFlag( false );
 
     /*
-    // TODO: improve ImplDevFontAttributes using the "font resource file"
+    // TODO: improve ImplFontAttributes using the "font resource file"
     aDFS.maName = // using "FONTRES:" from file
     if( rFontName != aDFS.maName )
         aDFS.maMapName = aFontName;
@@ -2430,7 +2430,7 @@ void WinSalGraphics::FreeEmbedFontData( const void* pData, long /*nLen*/ )
 const Ucs2SIntMap* WinSalGraphics::GetFontEncodingVector( const PhysicalFontFace* pFont, const Ucs2OStrMap** pNonEncoded, std::set<sal_Unicode> const**)
 {
     // TODO: even for builtin fonts we get here... why?
-    if( !pFont->IsEmbeddable() )
+    if( !pFont->CanEmbed() )
         return NULL;
 
     // fill the encoding vector
@@ -2468,7 +2468,7 @@ void WinSalGraphics::GetGlyphWidths( const PhysicalFontFace* pFont,
     HFONT hOldFont = 0;
     ImplDoSetFont( &aIFSD, fScale, hOldFont );
 
-    if( pFont->IsSubsettable() )
+    if( pFont->CanSubset() )
     {
         // get raw font file data
         const RawFontData xRawFontData( getHDC() );
@@ -2525,7 +2525,7 @@ void WinSalGraphics::GetGlyphWidths( const PhysicalFontFace* pFont,
             pMap = 0;
         }
     }
-    else if( pFont->IsEmbeddable() )
+    else if( pFont->CanEmbed() )
     {
         // get individual character widths
         rWidths.clear();

@@ -63,8 +63,8 @@ CoreTextFontData::CoreTextFontData( const CoreTextFontData& rSrc )
         mpCharMap = rSrc.mpCharMap;
 }
 
-CoreTextFontData::CoreTextFontData( const ImplDevFontAttributes& rDFA, sal_IntPtr nFontId )
-  : PhysicalFontFace( rDFA, 0 )
+CoreTextFontData::CoreTextFontData( const ImplFontAttributes& rDFA, sal_IntPtr nFontId )
+  : PhysicalFontFace( rDFA )
   , mnFontId( nFontId )
   , mbOs2Read( false )
   , mbHasOs2Table( false )
@@ -694,9 +694,9 @@ void AquaSalGraphics::GetGlyphWidths( const PhysicalFontFace* pFontData, bool bV
     rGlyphWidths.clear();
     rUnicodeEnc.clear();
 
-    if( !pFontData->IsSubsettable() )
+    if( !pFontData->CanSubset() )
     {
-        if( pFontData->IsEmbeddable() )
+        if( pFontData->CanEmbed() )
         {
             // get individual character widths
             OSL_FAIL("not implemented for non-subsettable fonts!\n");

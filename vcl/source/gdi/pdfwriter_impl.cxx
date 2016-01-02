@@ -2239,32 +2239,9 @@ OutputDevice* PDFWriterImpl::getReferenceDevice()
     return m_pReferenceDevice;
 }
 
-class ImplPdfBuiltinFontData : public PhysicalFontFace
+static ImplFontAttributes GetDevFontAttributes( const PDFWriterImpl::BuiltinFont& rBuiltin )
 {
-private:
-    const PDFWriterImpl::BuiltinFont& mrBuiltin;
-
-public:
-    static int const PDF_FONT_MAGIC = int(0xBDFF0A1C);
-    explicit                            ImplPdfBuiltinFontData( const PDFWriterImpl::BuiltinFont& );
-    const PDFWriterImpl::BuiltinFont&   GetBuiltinFont() const  { return mrBuiltin; }
-
-    virtual PhysicalFontFace*           Clone() const override { return new ImplPdfBuiltinFontData(*this); }
-    virtual ImplFontEntry*              CreateFontInstance( FontSelectPattern& ) const override;
-    virtual sal_IntPtr                  GetFontId() const override { return reinterpret_cast<sal_IntPtr>(&mrBuiltin); }
-};
-
-inline const ImplPdfBuiltinFontData* GetPdfFontData( const PhysicalFontFace* pFontData )
-{
-    const ImplPdfBuiltinFontData* pFD = nullptr;
-    if( pFontData && pFontData->CheckMagic( ImplPdfBuiltinFontData::PDF_FONT_MAGIC ) )
-        pFD = static_cast<const ImplPdfBuiltinFontData*>( pFontData );
-    return pFD;
-}
-
-static ImplDevFontAttributes GetDevFontAttributes( const PDFWriterImpl::BuiltinFont& rBuiltin )
-{
-    ImplDevFontAttributes aDFA;
+    ImplFontAttributes aDFA;
     aDFA.SetFamilyName( OUString::createFromAscii( rBuiltin.m_pName ) );
     aDFA.SetStyleName( OUString::createFromAscii( rBuiltin.m_pStyleName ) );
     aDFA.SetFamilyType( rBuiltin.m_eFamily );
@@ -2274,16 +2251,16 @@ static ImplDevFontAttributes GetDevFontAttributes( const PDFWriterImpl::BuiltinF
     aDFA.SetItalic( rBuiltin.m_eItalic );
     aDFA.SetWidthType( rBuiltin.m_eWidthType );
 
-    aDFA.mbOrientation  = true;
-    aDFA.mbDevice       = true;
-    aDFA.mnQuality      = 50000;
-    aDFA.mbSubsettable  = false;
-    aDFA.mbEmbeddable   = false;
+    aDFA.SetOrientationFlag( true );
+    aDFA.SetBuiltInFontFlag( true );
+    aDFA.SetQuality( 50000 );
+    aDFA.SetSubsettableFlag( false );
+    aDFA.SetEmbeddableFlag( false );
     return aDFA;
 }
 
 ImplPdfBuiltinFontData::ImplPdfBuiltinFontData( const PDFWriterImpl::BuiltinFont& rBuiltin )
-:   PhysicalFontFace( GetDevFontAttributes(rBuiltin), PDF_FONT_MAGIC ),
+:   PhysicalFontFace( GetDevFontAttributes(rBuiltin) ),
     mrBuiltin( rBuiltin )
 {}
 
@@ -2938,9 +2915,8 @@ bool PDFWriterImpl::emitTilings()
     return true;
 }
 
-sal_Int32 PDFWriterImpl::emitBuiltinFont( const PhysicalFontFace* pFont, sal_Int32 nFontObject )
+sal_Int32 PDFWriterImpl::emitBuiltinFont( const ImplPdfBuiltinFontData* pFD, sal_Int32 nFontObject )
 {
-    const ImplPdfBuiltinFontData* pFD = GetPdfFontData( pFont );
     if( !pFD )
         return 0;
     const BuiltinFont& rBuiltinFont = pFD->GetBuiltinFont();
@@ -2982,7 +2958,7 @@ std::map< sal_Int32, sal_Int32 > PDFWriterImpl::emitSystemFont( const PhysicalFo
 
     assert(pGraphics);
 
-    if( pFont->IsEmbeddable() )
+    if( pFont->CanEmbed() )
     {
         const unsigned char* pFontData = nullptr;
         long nFontLen = 0;
@@ -3004,7 +2980,7 @@ std::map< sal_Int32, sal_Int32 > PDFWriterImpl::emitSystemFont( const PhysicalFo
             }
         }
     }
-    else if( pFont->mbSubsettable )
+    else if( pFont->CanSubset() )
     {
         aSubType = OString( "/TrueType" );
         Int32Vector aGlyphWidths;
@@ -8441,7 +8417,7 @@ bool PDFWriterImpl::registerGlyphs( int nGlyphs,
         const int nFontGlyphId = pGlyphs[i] & (GF_IDXMASK | GF_ISCHAR | GF_GSUB);
         const PhysicalFontFace* pCurrentFont = pFallbackFonts[i] ? pFallbackFonts[i] : pDevFont;
 
-        if( pCurrentFont->mbSubsettable )
+        if( pCurrentFont->CanSubset() )
         {
             FontSubset& rSubset = m_aSubsets[ pCurrentFont ];
             // search for font specific glyphID
@@ -8485,7 +8461,7 @@ bool PDFWriterImpl::registerGlyphs( int nGlyphs,
                                                           bVertical,
                                                           pGraphics );
         }
-        else if( pCurrentFont->IsEmbeddable() )
+        else if( pCurrentFont->CanEmbed() )
         {
             sal_Int32 nFontID = 0;
             FontEmbedData::iterator it = m_aEmbeddedFonts.find( pCurrentFont );

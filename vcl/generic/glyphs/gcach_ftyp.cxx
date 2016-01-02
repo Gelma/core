@@ -191,7 +191,7 @@ const void * graphiteFontTable(const void* appFaceHandle, unsigned int name, siz
 }
 #endif
 
-FtFontInfo::FtFontInfo( const ImplDevFontAttributes& rDevFontAttributes,
+FtFontInfo::FtFontInfo( const ImplFontAttributes& rDevFontAttributes,
     const OString& rNativeFileName, int nFaceNum, sal_IntPtr nFontId)
 :
     maFaceFT( nullptr ),
@@ -209,9 +209,9 @@ FtFontInfo::FtFontInfo( const ImplDevFontAttributes& rDevFontAttributes,
     mpGlyph2Char( nullptr )
 {
     // prefer font with low ID
-    maDevFontAttributes.mnQuality += 10000 - nFontId;
+    maDevFontAttributes.IncreaseQualityBy( 10000 - nFontId );
     // prefer font with matching file names
-    maDevFontAttributes.mnQuality += mpFontFile->GetLangBoost();
+    maDevFontAttributes.IncreaseQualityBy( mpFontFile->GetLangBoost() );
 }
 
 FtFontInfo::~FtFontInfo()
@@ -367,7 +367,7 @@ FreetypeManager::~FreetypeManager()
 }
 
 void FreetypeManager::AddFontFile( const OString& rNormalizedName,
-    int nFaceNum, sal_IntPtr nFontId, const ImplDevFontAttributes& rDevFontAttr)
+    int nFaceNum, sal_IntPtr nFontId, const ImplFontAttributes& rDevFontAttr)
 {
     if( rNormalizedName.isEmpty() )
         return;
@@ -419,12 +419,12 @@ ServerFont* FreetypeManager::CreateFont( const FontSelectPattern& rFSD )
     return pNew;
 }
 
-ImplFTSFontData::ImplFTSFontData( FtFontInfo* pFI, const ImplDevFontAttributes& rDFA )
-:   PhysicalFontFace( rDFA, IFTSFONT_MAGIC ),
+ImplFTSFontData::ImplFTSFontData( FtFontInfo* pFI, const ImplFontAttributes& rDFA )
+:   PhysicalFontFace( rDFA ),
     mpFtFontInfo( pFI )
 {
-    mbDevice        = false;
-    mbOrientation   = true;
+    SetBuiltInFontFlag( false );
+    SetOrientationFlag( true );
 }
 
 ImplFontEntry* ImplFTSFontData::CreateFontInstance( FontSelectPattern& rFSD ) const
