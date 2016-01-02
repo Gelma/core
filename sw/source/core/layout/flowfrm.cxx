@@ -1561,7 +1561,7 @@ SwTwips SwFlowFrame::_GetUpperSpaceAmountConsideredForPageGrid(
     return nUpperSpaceAmountConsideredForPageGrid;
 }
 
-/** method to determent the upper space amount, which is considered for
+/** method to determine the upper space amount, which is considered for
     the previous frame
 
     OD 2004-03-11 #i11860#
