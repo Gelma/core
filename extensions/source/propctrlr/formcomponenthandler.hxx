@@ -320,7 +320,7 @@ namespace pcr
             @precond
                 our component actually has a Font property
             @param _out_rNewValue
-                a value desribing the new font, as <code>Sequence&lt; NamedValue &gt;</code>
+                a value describing the new font, as <code>Sequence&lt; NamedValue &gt;</code>
             @return
                 <TRUE/> if and only if the user successfully changed the font of our component
         */
