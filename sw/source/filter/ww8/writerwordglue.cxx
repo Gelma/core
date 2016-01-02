@@ -500,7 +500,7 @@ namespace sw
              All we want to do is ensure for now is that if a charfmt exist
              in the character properties that it rises to the top and is
              exported first.  In the future we might find more ordering
-             depandancies for export, in which case this is the place to do
+             dependencies for export, in which case this is the place to do
              it
             */
             if (nA == nB)
