@@ -140,7 +140,7 @@ public:
     */
     void AddFillProperties();
 
-    /** Add properties that describesattributes of 3D objects.
+    /** Add properties that describes attributes of 3D objects.
     */
     void Add3DProperties();
 
