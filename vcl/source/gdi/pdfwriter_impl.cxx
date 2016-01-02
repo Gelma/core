@@ -3767,7 +3767,7 @@ sal_Int32 PDFWriterImpl::createToUnicodeCMap( sal_uInt8* pEncoding,
     }
     aContents.append( "endbfchar\n"
                       "endcmap\n"
-                      "CMapName currentdict /CMap defineresource pop\n"
+                      "CMapName currentdict /CMap define resource pop\n"
                       "end\n"
                       "end\n" );
 #ifndef DEBUG_DISABLE_PDFCOMPRESSION
