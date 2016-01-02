@@ -1204,7 +1204,7 @@ void SAL_CALL BluetoothServer::run()
 
         // We don't need to listen to adapter changes anymore -- profile
         // registration is done globally for the entirety of bluez, so we only
-        // need adapters when setting discovereability, which can be done
+        // need adapters when setting discoverability, which can be done
         // dyanmically without the need to listen for changes.
 
         // TODO: exit on SD deinit
