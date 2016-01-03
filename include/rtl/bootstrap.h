@@ -45,7 +45,7 @@ extern "C" {
 
    2nd level: command line arguments. A "-env:SETTINGNAME=value" is given on
    command line. This allows to give an application a certain setting, even
-   if an ini-file exists (espicially useful for e.g. daemons that want to
+   if an ini-file exists (especially useful for e.g. daemons that want to
    start an executable with dynamical changing settings).<p>
 
    3rd level: environment variables. The application tries to get the
