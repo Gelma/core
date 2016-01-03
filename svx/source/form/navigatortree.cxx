@@ -1915,7 +1915,7 @@ namespace svxform
             }
 
             // now SelectList contains only entries, which have to be selected
-            // two possabilities : 1) run through SelectList, get SvTreeListEntry for every entry and select it (is more intuitive)
+            // two possibilities : 1) run through SelectList, get SvTreeListEntry for every entry and select it (is more intuitive)
             // 2) run through my SvLBoxEntries and select those, i can find in the SelectList
             // 1) needs =(k*n) (k=length of SelectList, n=number of entries),
             // plus the fact, that FindEntry uses extensive IsEqualWithoutChilden instead of comparing pointer to UserData
