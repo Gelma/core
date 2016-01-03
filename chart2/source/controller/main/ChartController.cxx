@@ -964,7 +964,7 @@ void SAL_CALL ChartController::queryClosing(
         return;
     }
 
-    if( !m_bCanClose )//@todo tryaqcuire mutex
+    if( !m_bCanClose )//@todo try acquire mutex
     {
         if( bGetsOwnership )
         {
