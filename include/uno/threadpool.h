@@ -31,7 +31,7 @@ extern "C" {
  * Thread identifier administration.
  ***/
 /**
-  Establishs an association between the current thread and the given thread identifier.
+  Establishes an association between the current thread and the given thread identifier.
   There can be only one association at a time. The association must be broken by
   uno_releaseIdFromCurrentThread().
   This method is in general called by a bridge, that wants to bind a remote threadId
