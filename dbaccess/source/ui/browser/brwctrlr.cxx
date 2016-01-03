@@ -2375,7 +2375,7 @@ IMPL_LINK_TYPED(SbaXDataBrowserController, OnFoundData, FmFoundRecordInformation
     // move the cursor
     xCursor->moveToBookmark(rInfo.aPosition);
 
-    // let the grid snyc it's display with the cursor
+    // let the grid sync its display with the cursor
     Reference< XPropertySet >  xModelSet(getControlModel(), UNO_QUERY);
     OSL_ENSURE(xModelSet.is(), "SbaXDataBrowserController::OnFoundData : no model set ?!");
     Any aOld = xModelSet->getPropertyValue("DisplayIsSynchron");
