@@ -6293,7 +6293,7 @@ bool SwMSDffManager::GetOLEStorageName(long nOLEId, OUString& rStorageName,
     if (rReader.m_pStg)
     {
         // Via the TextBox-PLCF we get the right char Start-End positions
-        // We should then find the EmbedField and the corresponding Sprms
+        // We should then find the EmbeddedField and the corresponding Sprms
         // in that Area.
         // We only need the Sprm for the Picture Id.
         long nOldPos = rReader.m_pStrm->Tell();
