@@ -453,7 +453,7 @@ void E3dObject::RecalcSnapRect()
 }
 
 // Inform the parent about insertion of a 3D object, so that the parent is able
-// treat the particualar objects in a special way (eg Light / Label in E3dScene)
+// treat the particular objects in a special way (eg Light / Label in E3dScene)
 
 void E3dObject::NewObjectInserted(const E3dObject* p3DObj)
 {
