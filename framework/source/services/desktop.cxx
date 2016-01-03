@@ -679,7 +679,7 @@ css::uno::Sequence< css::uno::Reference< css::frame::XDispatch > > SAL_CALL Desk
 }
 
 /*-************************************************************************************************************
-    @interface  XDipsatchProviderInterception
+    @interface  XDispatchProviderInterception
     @short      supports registration/deregistration of interception objects, which
                 are interested on special dispatches.
 
