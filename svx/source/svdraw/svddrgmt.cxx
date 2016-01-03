@@ -3960,7 +3960,7 @@ bool SdrDragCrop::EndSdrDrag(bool /*bCopy*/)
 
     // the following old code uses aOldRect/aNewRect to calculate the crop change for
     // the crop item. It implies unrotated objects, so create the unrotated original
-    // erctangle and the unrotated modified rectangle. Latter can in case of shear and/or
+    // rectangle and the unrotated modified rectangle. Latter can in case of shear and/or
     // rotation not be fetched by using
 
     //Rectangle aNewRect( pObj->GetLogicRect() );
