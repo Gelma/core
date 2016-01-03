@@ -1420,7 +1420,7 @@ void SbModule::GlobalRunInit( bool bBasicStart )
 
     // Initialise GlobalInitErr-Flag for Compiler-Error
     // With the help of this flags could be located in SbModule::Run() after the call of
-    // GlobalRunInit, if at the intialising of the module
+    // GlobalRunInit, if at the initialising of the module
     // an error occurred. Then it will not be launched.
     GetSbData()->bGlobalInitErr = false;
 
