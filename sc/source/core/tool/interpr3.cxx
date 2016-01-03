@@ -943,7 +943,7 @@ static double lcl_GetBetaHelperContFrac(double fX, double fA, double fB)
 
     const double fMaxIter = 50000.0;
     // loop security, normal cases converge in less than 100 iterations.
-    // FIXME: You will get so much iteratons for fX near mean,
+    // FIXME: You will get so much iterations for fX near mean,
     // I do not know a better algorithm.
     bool bfinished = false;
     do
