@@ -581,7 +581,7 @@ namespace
     /** tries to obtain the InteractionHandler associated with a given data source
 
         If the data source is a sdb-level data source, it will have a DatabaseDocument associated
-        with it. This doocument may have an InteractionHandler used while loading it.
+        with it. This document may have an InteractionHandler used while loading it.
 
         @throws RuntimeException
             if it occurs during invoking any of the data source's methods, or if any of the involved
