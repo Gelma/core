@@ -1282,7 +1282,7 @@ void DffPropertyReader::ApplyFillAttributes( SvStream& rIn, SfxItemSet& rSet, co
             break;
             case mso_fillShadeCenter :      // Shade from bounding rectangle to end point
             {
-                //If it is imported as a bitmap, it will not work well with transparecy especially 100
+                //If it is imported as a bitmap, it will not work well with transparency especially 100
                 //But the gradient look well comparing with imported as gradient. And rotate with shape
                 //also works better. So here just keep it.
                 if ( rObjData.aBoundRect.IsEmpty() )// size of object needed to be able
