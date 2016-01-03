@@ -2373,7 +2373,7 @@ void SmTextNode::CreateTextFromNode(OUString &rText)
 
         if ((GetToken().eType == TIDENT) && (GetFontDesc() == FNT_FUNCTION))
         {
-            //Search for existing functions and remove extraenous keyword
+            //Search for existing functions and remove extraneous keyword
             rText += "func ";
         }
         else if (bQuoted)
