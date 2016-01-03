@@ -418,7 +418,7 @@ public class JavaLoader implements XImplementationLoader,
     /**
      * Registers the <code>JavaLoader</code> at the registry.
      *
-     * @param      regKey   root key under which the <code>JavaLoader</code> should be regidstered.
+     * @param      regKey   root key under which the <code>JavaLoader</code> should be registered.
      * @return     true if registration succseeded - otherwise false.
      */
     public static boolean writeRegistryServiceInfo(XRegistryKey regKey) {
