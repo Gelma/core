@@ -1303,7 +1303,7 @@ void SfxObjectShell::TemplateDisconnectionAfterLoad()
         else
         {
             // !TODO/LATER: what's this?!
-            // Interactiv ( DClick, Contextmenu ) no long name is included
+            // Interactive ( DClick, Contextmenu ) no long name is included
             aTemplateName = getDocProperties()->getTitle();
             if ( aTemplateName.isEmpty() )
             {
