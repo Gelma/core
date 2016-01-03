@@ -2105,7 +2105,7 @@ namespace
                         // VCL AFAP.
                         // Since AddTextRectActions is the only way as long as we do not have
                         // a simple text layouter available, i will try to add it to the
-                        // TextLayouterDevice isloation.
+                        // TextLayouterDevice isolation.
                         drawinglayer::primitive2d::TextLayouterDevice aTextLayouterDevice;
                         aTextLayouterDevice.setFont(rPropertyHolders.Current().getFont());
                         GDIMetaFile aGDIMetaFile;
