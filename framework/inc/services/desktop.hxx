@@ -331,7 +331,7 @@ class Desktop : private cppu::BaseMutex,
          *
          *  @param  [out] lCalledListener
          *          every called listener will be returned here.
-         *          Those list will be used to informa all called listener
+         *          Those list will be used to inform all called listener
          *          about cancel this termination request.
          *
          *  @param  [out] bVeto
