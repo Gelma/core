@@ -851,7 +851,7 @@ void FmSearchEngine::Init(const OUString& sVisibleFields)
     if ( xMeta.is() )
         bCaseSensitiveIdentifiers = xMeta->supportsMixedCaseQuotedIdentifiers();
 
-    // now that we have this information, we need a collator which is able to case (in)sentively compare strings
+    // now that we have this information, we need a collator which is able to case (in)sensitivity compare strings
     m_aStringCompare.loadDefaultCollator( SvtSysLocale().GetLanguageTag().getLocale(),
         bCaseSensitiveIdentifiers ? 0 : css::i18n::CollatorOptions::CollatorOptions_IGNORE_CASE );
 
