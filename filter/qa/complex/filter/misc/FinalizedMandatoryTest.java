@@ -59,7 +59,7 @@ import com.sun.star.util.XFlushable;
  * <CODE>true</CODE> the tests check if an <CODE>Exception</CODE> must be thrown.
  * The next step of the test is the removal of the filter was removed, than the service
  * will be flushed. The test checks for expected exceptions: If the property
- * <CODE>Madantory</CODE> equals <CODE>true</CODE>, an <CODE>Exception</CODE> must
+ * <CODE>Mandatory</CODE> equals <CODE>true</CODE>, an <CODE>Exception</CODE> must
  * be thrown.
  * This test results <CODE>false</CODE> state if there is no filter available with:
  * <CODE>Finalized=true</CODE>
