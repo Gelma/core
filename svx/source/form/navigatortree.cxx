@@ -1919,7 +1919,7 @@ namespace svxform
             // 2) run through my SvLBoxEntries and select those, i can find in the SelectList
             // 1) needs =(k*n) (k=length of SelectList, n=number of entries),
             // plus the fact, that FindEntry uses extensive IsEqualWithoutChilden instead of comparing pointer to UserData
-            // 2) needs =(n*log k), dublicates some code from FindEntry
+            // 2) needs =(n*log k), duplicates some code from FindEntry
             // This may be a frequently used code ( at every change in mark of the view!),
             // so i use latter one
             SvTreeListEntry* pLoop = First();
