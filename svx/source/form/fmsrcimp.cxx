@@ -847,7 +847,7 @@ void FmSearchEngine::Init(const OUString& sVisibleFields)
         xMeta = xConn->getMetaData();
     OSL_ENSURE( xMeta.is(), "FmSearchEngine::Init: very strange cursor (could not derive connection meta data from it)!" );
 
-    bool bCaseSensitiveIdentifiers = true;  // assume case sensivity
+    bool bCaseSensitiveIdentifiers = true;  // assume case sensitivity
     if ( xMeta.is() )
         bCaseSensitiveIdentifiers = xMeta->supportsMixedCaseQuotedIdentifiers();
 
