@@ -2287,7 +2287,7 @@ IMPL_LINK_TYPED(SbaXDataBrowserController, OnInvalidateClipboard, Timer*, _pTime
     InvalidateFeature(ID_BROWSER_COPY);
 
     // if the invalidation was triggered by the timer, we do not need to invalidate PASTE.
-    // The timer is only for checking the CUT/COPY slots regulariry, which depend on the
+    // The timer is only for checking the CUT/COPY slots regulary, which depend on the
     // selection state of the active cell
     // TODO: get a callback at the Edit which allows to be notified when the selection
     // changes. This would be much better than this cycle-eating polling mechanism here ....
