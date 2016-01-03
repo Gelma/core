@@ -1358,7 +1358,7 @@ namespace svxform
         }
         catch ( const Exception& )
         {
-            OSL_FAIL("NavigatorTree::NewForm : could not set esssential properties !");
+            OSL_FAIL("NavigatorTree::NewForm : could not set essential properties!");
         }
 
 
