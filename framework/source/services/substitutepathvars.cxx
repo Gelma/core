@@ -800,7 +800,7 @@ OUString SubstitutePathVariables::GetWorkVariableValue() const
     if (!x)
     {
         // fallback to $HOME in case platform dependent config layer does not return
-        // an usuable work dir value.
+        // an usable work dir value.
         osl::Security aSecurity;
         aSecurity.getHomeDir( aWorkPath );
     }
