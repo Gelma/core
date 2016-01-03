@@ -86,7 +86,7 @@ because it puts out more information.
 Creating a new version_xxx.dll
 ==============================
 When a version of our assemblies changes then one should provide a new version dll which test exactly the assemblies with the changed version. This is easily done:
-1. set the build environment in which the new versions are effectiv.
+1. set the build environment in which the new versions are effective.
 2  call: dmake name=version_xxx.dll
 3. copy the new version dll from the output tree into qa/versioning/version_libs
 4. commit the new version.dll using the -kb switch (only when creating the new file : cvs new -kb version_3_1_0.dll)
