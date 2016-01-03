@@ -789,7 +789,7 @@ static basegfx::B2DPolyPolygon GetLineArrow( const sal_Int32 nLineWidth, const M
 {
     basegfx::B2DPolyPolygon aRetPolyPoly;
     // 70 100mm = 2pt = 40 twip. In MS, line width less than 2pt has the same size arrow as 2pt
-    //If the unit is twip. Make all use this unit especailly the critical value 70/40.
+    //If the unit is twip. Make all use this unit especially the critical value 70/40.
     sal_Int32   nLineWidthCritical = bScaleArrow ? 40 : 70;
     double      fLineWidth = nLineWidth < nLineWidthCritical ? nLineWidthCritical : nLineWidth;;
 
