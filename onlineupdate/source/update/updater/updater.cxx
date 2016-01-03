@@ -1829,7 +1829,7 @@ LaunchCallbackApp(const NS_tchar *workingDir,
     WinLaunchChild(argv[0], argc, argv, nullptr);
   }
 #else
-# warning "Need implementaton of LaunchCallbackApp"
+# warning "Need implementation of LaunchCallbackApp"
 #endif
 }
 
