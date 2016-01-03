@@ -6856,7 +6856,7 @@ WW8Fonts::WW8Fonts( SvStream& rSt, WW8Fib& rFib )
         nMax = nCalcMax;
     else
     {
-        //newer versions include purportive count of fonts, so take min of that
+        //newer versions include supportive count of fonts, so take min of that
         //and calced max
         nMax = std::min(nMax, nCalcMax);
     }
