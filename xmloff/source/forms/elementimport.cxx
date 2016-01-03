@@ -1981,7 +1981,7 @@ namespace xmloff
         // split up the value string
         if (!_rValue.isEmpty())
         {
-            // For the moment, we build a vector instead of a Sequence. It's easier to handle because of it's
+            // For the moment, we build a vector instead of a Sequence. It's easier to handle because of its
             // push_back method
             ::std::vector< OUString > aElements;
             // estimate the number of tokens

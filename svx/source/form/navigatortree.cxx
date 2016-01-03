@@ -801,7 +801,7 @@ namespace svxform
         // 0) the root entry is part of the list (can't DnD the root!)
         // 1) one of the draged entries is to be dropped onto it's own parent
         // 2) -               "       - is to be dropped onto itself
-        // 3) -               "       - is a Form and to be dropped onto one of it's descendants
+        // 3) -               "       - is a Form and to be dropped onto one of its descendants
         // 4) one of the entries is a control and to be dropped onto the root
         // 5) a control or form will be dropped onto a control which is _not_ a sibling (dropping onto a sibling
         //      means moving the control)
@@ -1844,7 +1844,7 @@ namespace svxform
                     {
                         // actually i would have to test, if parent is part of m_arr_CurrentSelection ...
                         // but if it's selected, than it's in m_arrCurrentSelection
-                        // or one of it's ancestors, which was selected earlier.
+                        // or one of its ancestors, which was selected earlier.
                         // In both cases IsSelected is enough
                         if (IsSelected(pParentLoop))
                             break;
