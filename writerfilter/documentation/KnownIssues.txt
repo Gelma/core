@@ -16,7 +16,7 @@
 #   the License at http://www.apache.org/licenses/LICENSE-2.0 .
 #
 
-- foonotes/endnotes: font index cannot be applied to Writer's footnote symbol 
+- footnotes/endnotes: font index cannot be applied to Writer's footnote symbol 
 in the footnote area
 - border types: width of border lines are changed to fit Writer's defaults, 
 triple borders unsupported
