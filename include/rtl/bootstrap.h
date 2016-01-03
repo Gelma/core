@@ -156,7 +156,7 @@ typedef void * rtlBootstrapHandle;
 /**
    Opens a bootstrap argument container.
    @param pIniName [in]   The name of the ini-file to use, if <code>NULL</code> defaults
-                          to the excutables name
+                          to the executables name
    @return                Handle for a bootstrap argument
                           container
 */
