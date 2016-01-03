@@ -1032,7 +1032,7 @@ bool Desktop::isUIOnSessionShutdownAllowed()
 
     @param  bSessionDataExists [boolean ... out!]
             there exists some session data.
-            Because the user may be logged out last time from it's
+            Because the user may be logged out last time from its
             unix session...
 */
 void impl_checkRecoveryState(bool& bCrashed           ,

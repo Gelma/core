@@ -439,7 +439,7 @@ namespace dbtools
     OOO_DLLPUBLIC_DBTOOLS bool canDelete(const css::uno::Reference< css::beans::XPropertySet>& _rxCursorSet);
 
 
-    /** compose a complete table name from it's up to three parts, regarding to the database meta data composing rules
+    /** compose a complete table name from its up to three parts, regarding to the database meta data composing rules
     */
     OOO_DLLPUBLIC_DBTOOLS OUString composeTableName( const css::uno::Reference< css::sdbc::XDatabaseMetaData >& _rxMetaData,
                             const OUString& _rCatalog,

@@ -4224,7 +4224,7 @@ void FormController::deleteInterceptor(const Reference< XDispatchProviderInterce
         return;
     }
 
-    // log off the interception from it's interception object
+    // log off the interception from its interception object
     DispatchInterceptionMultiplexer* pInterceptorImpl = *aIter;
     pInterceptorImpl->dispose();
     pInterceptorImpl->release();

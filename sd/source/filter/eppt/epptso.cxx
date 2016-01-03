@@ -820,7 +820,7 @@ void PPTWriter::ImplWritePortions( SvStream& rOut, TextObj& rTextObj )
             {
                 sal_uInt32 nBackgroundColor = 0xffffff;
 
-                if ( !nCharColor )          // special threatment for
+                if ( !nCharColor )          // special treatment for
                     nCharColor = 0xffffff;  // black fontcolor
 
                 css::uno::Any aAny;
