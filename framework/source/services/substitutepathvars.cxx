@@ -917,7 +917,7 @@ throw ( NoSuchElementException, RuntimeException )
                     bWorkDirURLRetrieved = true;
                 }
 
-                // Check preconditions to substitue path variables.
+                // Check preconditions to substitute path variables.
                 // 1. A path variable can only be substituted if it follows a ';'!
                 // 2. It's located exactly at the start of the string being substituted!
                 if (( aFixedVarTable[ int( nIndex ) ].bAbsPath && (( nPosition == 0 ) || (( nPosition > 0 ) && ( aWorkText[nPosition-1] == ';')))) ||
