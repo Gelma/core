@@ -1410,7 +1410,7 @@ bool SfxObjectShell::IsLoading() const
 void SfxObjectShell::CancelTransfers()
 /*  [Description]
 
-    Here can Transfers get canceled, which were not regestered
+    Here can Transfers get canceled, which were not registered
     by RegisterTransfer.
 */
 {
