@@ -308,7 +308,7 @@ void JobURL::impldbg_checkIt()
 /**
     @short      helper debug method
     @descr      It uses the given parameter to create a new instance of a JobURL.
-                They results will be compared with the exepected ones.
+                They results will be compared with the expected ones.
                 The a log will be written, which contains some detailed information
                 for this sub test.
 
