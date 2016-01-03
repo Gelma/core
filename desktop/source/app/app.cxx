@@ -2788,7 +2788,7 @@ void Desktop::CheckFirstRun( )
         m_firstRunTimer.Start();
 
 #ifdef WNT
-        // Check if Quckstarter should be started (on Windows only)
+        // Check if Quickstarter should be started (on Windows only)
         TCHAR szValue[8192];
         DWORD nValueSize = sizeof(szValue);
         HKEY hKey;
