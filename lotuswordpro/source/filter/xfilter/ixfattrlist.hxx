@@ -66,7 +66,7 @@
  * @brief
  * Attribute list interface for sax writer.
  * Implement this interface for different sax writer. For OOo,i use the XDocumentHandler stream;
- * for ouputting the local file system,It's just a vector container.
+ * for outputting the local file system,It's just a vector container.
  */
 class   IXFAttrList
 {
