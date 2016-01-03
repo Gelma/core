@@ -869,7 +869,7 @@ void SAL_CALL ChartController::dispose()
 
             //the accessible view is disposed within window destructor of m_pChartWindow
             m_pChartWindow->clear();
-            m_pChartWindow = nullptr;//m_pChartWindow is deleted via UNO due to dispose of m_xViewWindow (trigerred by Framework (Controller pretends to be XWindow also))
+            m_pChartWindow = nullptr;//m_pChartWindow is deleted via UNO due to dispose of m_xViewWindow (triggered by Framework (Controller pretends to be XWindow also))
             m_xViewWindow->dispose();
             m_xChartView.clear();
         }
