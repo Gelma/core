@@ -1762,7 +1762,7 @@ IMPL_LINK_NOARG_TYPED(SlideshowImpl, ReadyForNextInputHdl, Timer *, void)
 }
 
 /** if I catch someone someday who calls this method by hand
-    and not by using the timer, I will personaly punish this
+    and not by using the timer, I will personally punish this
     person seriously, even if this person is me.
 */
 IMPL_LINK_NOARG_TYPED(SlideshowImpl, updateHdl, Timer *, void)
