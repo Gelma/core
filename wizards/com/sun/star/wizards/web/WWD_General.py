@@ -294,7 +294,7 @@ class WWD_General(WebWizardDialog):
     '''
     substitutes path variables with the corresponding values.
     @param path a path, which might contain OOo path variables.
-    @return the path, after substituing path variables.
+    @return the path, after substituting path variables.
     '''
 
     def substitute(self, path):
