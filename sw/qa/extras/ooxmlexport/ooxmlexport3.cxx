@@ -759,7 +759,7 @@ DECLARE_OOXMLEXPORT_TEST(testPNGImageCrop, "test_PNG_ImageCrop.docx")
 #if !defined(MACOSX)
     /* The problem was image cropping information was not getting saved
      * after roundtrip.
-     * Check for presenece of cropping parameters in exported file.
+     * Check for presence of cropping parameters in exported file.
      */
     uno::Reference<drawing::XShape> image = getShape(1);
     uno::Reference<beans::XPropertySet> imageProperties(image, uno::UNO_QUERY);
