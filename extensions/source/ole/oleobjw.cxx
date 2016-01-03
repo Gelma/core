@@ -138,7 +138,7 @@ Any IUnknownWrapper_Impl::queryInterface(const Type& t)
         return Any();
     if ( ( t == cppu::UnoType<XInvocation>::get() || t == cppu::UnoType<XAutomationInvocation>::get() ) && !m_spDispatch)
         return Any();
-    // XDirectInvocation seems to be an oracle replacement for XAutomationInvocation, however it is flawed esecially wrt. assumptions about whether to invoke a
+    // XDirectInvocation seems to be an oracle replacement for XAutomationInvocation, however it is flawed especially wrt. assumptions about whether to invoke a
     // Put or Get property, the implementation code has no business guessing that, it's up to the caller to decide that. Worse XDirectInvocation duplicates lots of code.
     // XAutomationInvocation provides separate calls for put& get
     // properties. Note: Currently the basic runtime doesn't call put properties directly, it should... after all the basic runtime should know whether it is calling a put or get property.
