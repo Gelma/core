@@ -32,7 +32,7 @@ extern "C" {
    @file
 
    The described concept provides a platform independent way to access
-   minimum bootstrap settings for every application by excplitly or
+   minimum bootstrap settings for every application by explicitly or
    implicitly passing the values to the application.<p>
 
    MULTI-LEVEL STRATEGY FOR RETRIEVAL OF BOOTSTRAP VALUES :<p>
