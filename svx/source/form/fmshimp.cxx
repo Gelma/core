@@ -2019,7 +2019,7 @@ bool FmXFormShell::setCurrentSelection( const InterfaceBag& _rSelection )
         OSL_ENSURE( xThisRoundsForm.is(), "FmXFormShell::setCurrentSelection: *everything* should belong to a form!" );
 
         if ( !xNewCurrentForm.is() )
-        {   // the first form we encounterd
+        {   // the first form we encountered
             xNewCurrentForm = xThisRoundsForm;
         }
         else if ( xNewCurrentForm != xThisRoundsForm )
