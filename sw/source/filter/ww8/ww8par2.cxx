@@ -2884,7 +2884,7 @@ bool WW8TabDesc::SetPamInCell(short nWwCol, bool bPam)
             pIo->SetLowerSpacing(*pIo->m_pPaM, 0);
 
         //We need to set the pPaM on the first cell, invalid
-        //or not so that we can collect paragraph proproties over
+        //or not so that we can collect paragraph properties over
         //all the cells, but in that case on the valid cell we do not
         //want to reset the fmt properties
         sal_uLong nSttNd = pTabBox->GetSttIdx() + 1,
