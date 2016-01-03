@@ -256,7 +256,7 @@ SwDoubleLinePortion::SwDoubleLinePortion(SwDoubleLinePortion& rDouble, sal_Int32
 
 // This constructor uses the textattribute to get the right brackets.
 // The textattribute could be a 2-line-attribute or a character- or
-// internetstyle, which contains the 2-line-attribute.
+// internet style, which contains the 2-line-attribute.
 SwDoubleLinePortion::SwDoubleLinePortion(const SwMultiCreator& rCreate, sal_Int32 nEnd)
     : SwMultiPortion(nEnd)
     , pBracket(new SwBracket())
