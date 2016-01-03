@@ -428,7 +428,7 @@ class DemoRenderer
             xPoly = mxDevice->createCompatibleBezierPolyPolygon(aPolys);
             xPoly->setClosed( 0, true );
             //uno::Reference< rendering::XBezierPolyPolygon2D> xPP( xPoly, uno::UNO_QUERY );
-            //compiles, but totally screws up.  I think it is interpretting the bezier as a line
+            //compiles, but totally screws up.  I think it is interpreting the bezier as a line
             uno::Reference< rendering::XPolyPolygon2D> xPP( xPoly, uno::UNO_QUERY );
 
             rendering::StrokeAttributes aStrokeAttrs;
