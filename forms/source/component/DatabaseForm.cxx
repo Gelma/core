@@ -155,7 +155,7 @@ class OFormSubmitResetThread: public OComponentEventThread
 {
 protected:
 
-    // duplicate an event with respect to it's type
+    // duplicate an event with respect to its type
     virtual EventObject *cloneEvent( const EventObject *pEvt ) const override;
 
     // process an event. while processing the mutex isn't locked, and pCompImpl

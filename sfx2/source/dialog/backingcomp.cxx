@@ -348,7 +348,7 @@ css::uno::Sequence< OUString > SAL_CALL BackingComp::getSupportedServiceNames()
             xBackingComp);
 
         // attach controller to the frame
-        // We will use it's container window, to create
+        // We will use its container window, to create
         // the component window. From now we offer the window interfaces!
         xBackingComp.attachFrame(xFrame);
 

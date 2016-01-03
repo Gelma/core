@@ -590,7 +590,7 @@ namespace svgio
                                 // no clip needed, but an invisible HiddenGeometryPrimitive2D
                                 // to allow getting the full Svg range using the primitive mechanisms.
                                 // This is needed since e.g. an SdrObject using this as graphic will
-                                // create a mapping transformation to exactly map the content to it's
+                                // create a mapping transformation to exactly map the content to its
                                 // real life size
                                 const drawinglayer::primitive2d::Primitive2DReference xLine(
                                     new drawinglayer::primitive2d::PolygonHairlinePrimitive2D(

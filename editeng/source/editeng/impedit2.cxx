@@ -2527,7 +2527,7 @@ EditPaM ImpEditEngine::AutoCorrect( const EditSelection& rCurSel, sal_Unicode c,
         aSel.Max().SetIndex( aAuto.GetCursor() );
 
         // #i78661 since the SvxAutoCorrect object used here is
-        // shared we need to reset the value to it's original state.
+        // shared we need to reset the value to its original state.
         pAutoCorrect->SetAutoCorrFlag( CapitalStartSentence, bOldCapitalStartSentence );
     }
     return aSel.Max();

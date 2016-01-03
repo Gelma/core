@@ -672,7 +672,7 @@ namespace sfx2
             );
 
 
-            // add the filter to it's group
+            // add the filter to its group
 
             // for this, check if the filter is part of a local filter
             FilterGroupEntryReferrer::iterator aBelongsToLocal = aLocalClassesRef.find( sFilterName );

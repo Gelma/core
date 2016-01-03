@@ -3003,7 +3003,7 @@ namespace
                                 // apply general current transformation
                                 aSubTransform = rPropertyHolders.Current().getTransformation() * aSubTransform;
 
-                                // evtl. embed sub-content to it's transformation
+                                // evtl. embed sub-content to its transformation
                                 if(!aSubTransform.isIdentity())
                                 {
                                     const drawinglayer::primitive2d::Primitive2DReference aEmbeddedTransform(

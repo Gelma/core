@@ -514,7 +514,7 @@ void SAL_CALL VCLXMultiLineEdit::setFocus(  ) throw(css::uno::RuntimeException, 
     SolarMutexGuard aGuard;
 
     // don't grab the focus if we already have it. Reason is that the only thing which the edit
-    // does is forwarding the focus to it's text window. This text window then does a "select all".
+    // does is forwarding the focus to its text window. This text window then does a "select all".
     // So if the text window already has the focus, and we give the focus to the multi line
     // edit, then all which happens is that everything is selected.
     // #i27072#

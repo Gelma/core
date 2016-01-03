@@ -186,7 +186,7 @@ void SAL_CALL InterceptionHelper::releaseDispatchProviderInterceptor(const css::
 
     // search this interceptor ...
     // If it could be located inside cache -
-    // use it's slave/master relations to update the interception list;
+    // use its slave/master relations to update the interception list;
     // set empty references for it as new master and slave;
     // and relase it from out cache.
     InterceptorList::iterator pIt = m_lInterceptionRegs.findByReference(xInterceptor);

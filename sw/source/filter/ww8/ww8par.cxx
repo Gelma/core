@@ -752,7 +752,7 @@ SdrObject* SwMSDffManager::ProcessObj(SvStream& rSt,
                 );
             }
 
-            // Distance of Textbox to it's surrounding Autoshape
+            // Distance of Textbox to its surrounding Autoshape
             sal_Int32 nTextLeft = GetPropertyValue( DFF_Prop_dxTextLeft, 91440L);
             sal_Int32 nTextRight = GetPropertyValue( DFF_Prop_dxTextRight, 91440L );
             sal_Int32 nTextTop = GetPropertyValue( DFF_Prop_dyTextTop, 45720L  );
