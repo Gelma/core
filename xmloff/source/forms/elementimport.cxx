@@ -1520,7 +1520,7 @@ namespace xmloff
         rtl::Reference < XMLTextImportHelper > xTextImportHelper( m_rContext.getGlobalContext().GetTextImport() );
         if ( m_xCursor.is() )
         {
-            // delete the newline which has been imported errornously
+            // delete the newline which has been imported erroneously
             // TODO (fs): stole this code somewhere - why don't we fix the text import??
             m_xCursor->gotoEnd( sal_False );
             m_xCursor->goLeft( 1, sal_True );
