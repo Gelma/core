@@ -161,7 +161,7 @@ public class ProcessHandler
      * @param envVars       The specified environment variables are
      *                      set for the new process.
      *                      If log stream is null, logging is printed to stdout.
-     * @param  timeOut      When started sychronisly, the maximum time the
+     * @param  timeOut      When started synchronously, the maximum time the
      *                      process will live. When the process being destroyed
      *                      a log will be written out. It can be asked on
      *                      <code>isTimedOut()</code> if it has been terminated.
