@@ -247,7 +247,7 @@ css::uno::Sequence< css::uno::Reference< css::frame::XDispatch > > SAL_CALL JobD
     @short  implementation of XNotifyingDispatch::dispatchWithNotification()
     @descr  It creates the job service implementation and call execute on it.
             Further it starts the life time control of it. (important for async job)
-            For synchonrous job we react for the returned result directly ... for asynchronous
+            For synchronous job we react for the returned result directly ... for asynchronous
             ones we do it later inside our callback method. But we use the same impl method
             doing that to share the code. (see impl_finishJob())
 
