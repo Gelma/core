@@ -150,7 +150,7 @@ class Desktop : private cppu::BaseMutex,
                         different to all other listener.
 
                         Btw: Desktop.terminate() was designed in the past to be used
-                        within an UI based envrionment. So it's allowed e.g. to
+                        within an UI based environment. So it's allowed e.g. to
                         call XController.suspend() here. If UI isn't an option ... please
                         use XCloseable.close() at these desktop implementation.
                         ... if it will be supported in the future .-))
