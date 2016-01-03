@@ -120,7 +120,7 @@ void SAL_CALL InterceptionHelper::registerDispatchProviderInterceptor(const css:
     SolarMutexClearableGuard aWriteLock;
 
     // a) no interceptor at all - set this instance as master for given interceptor
-    //    and set our slave as it's slave - and put this interceptor to the list.
+    //    and set our slave as its slave - and put this interceptor to the list.
     //    It's place there doesn matter. Because this list is currently empty.
     if (m_lInterceptionRegs.empty())
     {
