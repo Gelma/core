@@ -376,7 +376,7 @@ namespace dbtools
                                     , const OUString& _rName
                                     ,EComposeRule _eComposeRule);
 
-    /** split a fully qualified table name (including catalog and schema, if applicable) into it's component parts.
+    /** split a fully qualified table name (including catalog and schema, if applicable) into its component parts.
         @param  _rxConnMetaData     meta data describing the connection where you got the table name from
         @param  _rQualifiedName     fully qualified table name
         @param  _rCatalog           (out parameter) upon return, contains the catalog name
