@@ -1416,7 +1416,7 @@ void ChartController::executeDispatch_MoveSeries( bool bForward )
 
     //get selected series
     OUString aObjectCID(m_aSelection.getSelectedCID());
-    uno::Reference< XDataSeries > xGivenDataSeries( ObjectIdentifier::getDataSeriesForCID( //yyy todo also legendentries and labels?
+    uno::Reference< XDataSeries > xGivenDataSeries( ObjectIdentifier::getDataSeriesForCID( //yyy todo also legend entries and labels?
             aObjectCID, getModel() ) );
 
     UndoGuardWithSelection aUndoGuard(
