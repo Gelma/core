@@ -263,7 +263,7 @@ LCID SAL_CALL CDOTransferable::getLocaleFromClipboard( )
     return lcid;
 }
 
-// i think it's not necessary to call ReleaseStgMedium
+// I think it's not necessary to call ReleaseStgMedium
 // in case of failures because nothing should have been
 // allocated etc.
 
