@@ -2500,7 +2500,7 @@ void SbaXDataBrowserController::initializeParser() const
 void SbaXDataBrowserController::loaded(const EventObject& /*aEvent*/) throw( RuntimeException, std::exception )
 {
     // not interested in
-    // we're loading within an separate thread and have a handling  for it's "finished event"
+    // we're loading within an separate thread and have a handling for its "finished event"
 }
 
 void SbaXDataBrowserController::unloading(const EventObject& /*aEvent*/) throw( RuntimeException, std::exception )
