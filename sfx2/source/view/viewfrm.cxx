@@ -1668,7 +1668,7 @@ void SfxViewFrame::Enable( bool bEnable )
 
 /*  [Description]
 
-    This method makes the Frame-Window visible and before transmitts the
+    This method makes the Frame-Window visible and before transmits the
     window name. In addition, the document is held. In general one can never
     show the window directly!
 */
