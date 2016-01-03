@@ -669,7 +669,7 @@ namespace drawinglayer
             - TextHierarchyParagraphPrimitive2D: Encapsulates single paragraph
             - TextHierarchyBlockPrimitive2D: encapsulates object texts (only one ATM)
             Those are now supported in hierarchy. This means the MetaFile renderer will support them
-            by using them, reculrively using their content and adding MetaFile comments as needed.
+            by using them, recursively using their content and adding MetaFile comments as needed.
             This also means that when another text layouter will be used it will be necessary to
             create/support the same HierarchyPrimitives to support users.
             To transport the information using this hierarchy is best suited to all future needs;
