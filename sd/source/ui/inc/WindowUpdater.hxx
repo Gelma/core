@@ -94,7 +94,7 @@ public:
             nothing is done.
         @param pDocument
             When given a pointer to a document then tell it to reformat all
-            text objects.  This refromatting is necessary for the new values
+            text objects.  This refomatting is necessary for the new values
             to take effect.
     */
     void Update (OutputDevice* pDevice, SdDrawDocument* pDocument=nullptr) const;
