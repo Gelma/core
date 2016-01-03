@@ -412,7 +412,7 @@ ScVbaApplication::setStatusBar( const uno::Any& _statusbar ) throw (uno::Runtime
         }
     }
     else
-        throw uno::RuntimeException("Invalid prarameter. It should be a string or False" );
+        throw uno::RuntimeException("Invalid parameter. It should be a string or False" );
 }
 
 ::sal_Int32 SAL_CALL
