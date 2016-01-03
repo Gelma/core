@@ -125,7 +125,7 @@ private:
     tWindowList maWindowList;
 
     /** The central method of this class.  Update the given output device.
-        It is the task of the caller to initiate a refrormatting of the
+        It is the task of the caller to initiate a reformatting of the
         document that is rendered on this device to reflect the changes.
         @param pWindow
             The output device to update.  When it is <null/> then the call
