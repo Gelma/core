@@ -599,7 +599,7 @@ ScVbaApplication::GoTo( const uno::Any& Reference, const uno::Any& Scroll ) thro
         ScGridWindow* gridWindow = static_cast<ScGridWindow*>(pShell->GetWindow());
         if ( xVbaRange.is() )
         {
-            //TODO bScroll should be using. An this time, it does not have effection
+            //TODO bScroll should be used. At this time, it does not have effect
             if( bScroll )
             {
                 xVbaRange->Select();
