@@ -3728,7 +3728,7 @@ void AutoRecovery::implts_doEmergencySave(const DispatchParams& aParams)
     // That is normally done by recalling it from a timer.
     // Here we must do it immediately!
     // Of course this method returns the right state -
-    // because it knows, that we are running in ERMERGENCY SAVE mode .-)
+    // because it knows, that we are running in EMERGENCY SAVE mode .-)
 
     bool                 bAllowUserIdleLoop = false; // not allowed to change that .-)
     AutoRecovery::ETimerType eSuggestedTimer    = AutoRecovery::E_DONT_START_TIMER;
