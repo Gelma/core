@@ -2259,7 +2259,7 @@ SwTableLine *SwXMLTableContext::MakeTableLine( SwTableBox *pUpper,
             }
             else
             {
-                // No subtabels: We use the new table model.
+                // No subtables: We use the new table model.
                 SwXMLTableCell_Impl *pCell = GetCell(nTopRow,nCol);
 
                 // #i95726# - some fault tolerance
