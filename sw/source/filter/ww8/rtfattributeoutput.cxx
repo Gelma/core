@@ -184,7 +184,7 @@ void RtfAttributeOutput::RTLAndCJKState(bool bIsRTL, sal_uInt16 nScript)
        m_rExport.Strm() << (bIsRTL ? OOO_STRING_SVTOOLS_RTF_RTLCH : OOO_STRING_SVTOOLS_RTF_LTRCH); would be sufficient here ,
        but looks like word needs to see the other directional token to be
        satisified that all is kosher, otherwise it seems in ver 2003 to go and
-       semi-randomlyly stick strike through about the place. Perhaps
+       semi-randomly stick strike through about the place. Perhaps
        strikethrough is some ms developers "something is wrong signal" debugging
        code that we're triggering ?
        */
