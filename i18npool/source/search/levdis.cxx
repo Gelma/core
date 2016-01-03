@@ -23,7 +23,7 @@
     including wildcards
     '*' for any number (0 or more) of arbitrary characters
     '?' for exactly one arbitrary character
-    escapeable with  backslash, "\*" or "\?"
+    escapable with  backslash, "\*" or "\?"
 
     Return:
         WLD if WLD <= nLimit, else nLimit+1
