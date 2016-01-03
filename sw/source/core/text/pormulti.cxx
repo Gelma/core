@@ -1599,7 +1599,7 @@ static bool lcl_ExtractFieldFollow( SwLineLayout* pLine, SwLinePortion* &rpField
 }
 
 // If a multi portion completely has to go to the
-// next line, this function is called to trunctate
+// next line, this function is called to truncate
 // the rest of the remaining multi portion
 static void lcl_TruncateMultiPortion( SwMultiPortion& rMulti, SwTextFormatInfo& rInf,
                                sal_Int32 nStartIdx )
