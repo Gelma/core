@@ -1841,7 +1841,7 @@ bool SwContentFrame::_WouldFit( SwTwips nSpace,
                             bool bTstMove,
                             const bool bObjsInNewUpper )
 {
-    // To have the footnote select it's place carefully, it needs
+    // To have the footnote select its place carefully, it needs
     // to be moved in any case if there is at least one page/column
     // between the footnote and the new Upper.
     SwFootnoteFrame* pFootnoteFrame = nullptr;
