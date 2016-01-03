@@ -222,7 +222,7 @@
 
 
 	<!-- current node is a table:table-column -->
-	<!-- dublicates column elements in case of column-repeated attribute  -->
+	<!-- duplicates column elements in case of column-repeated attribute  -->
 	<xsl:template name="repeat-adding-table-column">
 		<xsl:param name="table:table-column" />
 		<xsl:param name="numberColumnsRepeated" />
