@@ -1121,7 +1121,7 @@ throw ( RuntimeException )
             }
         }
 
-        // This part can be iteratered more than one time as variables can contain variables again!
+        // This part can be iterated more than one time as variables can contain variables again!
         for (ReSubstUserVarOrderVector::const_iterator i(
                  m_aReSubstUserVarOrder.begin());
              i != m_aReSubstUserVarOrder.end(); ++i)
