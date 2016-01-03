@@ -227,7 +227,7 @@ public class DatabaseDocument extends TestCase implements com.sun.star.document.
                 return;
             }
 
-            assertEquals("interaction handleer called in wrong state", STATE_LOADING_DOC, m_loadDocState);
+            assertEquals("interaction handler called in wrong state", STATE_LOADING_DOC, m_loadDocState);
 
             // auto-approve
             final XInteractionContinuation continuations[] = _request.getContinuations();
