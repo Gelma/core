@@ -122,7 +122,7 @@ namespace
 
         @return
             <TRUE/> if and only if the client could be found and
-            <arg>rPos</arg> has been filled with it's position
+            <arg>rPos</arg> has been filled with its position
     */
     static bool implLookupClient(
             const AccessibleEventNotifier::TClientId nClient,

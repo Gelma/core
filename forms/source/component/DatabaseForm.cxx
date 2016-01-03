@@ -3528,7 +3528,7 @@ void SAL_CALL ODatabaseForm::moveToInsertRow() throw( SQLException, RuntimeExcep
         // Formerly, the following line was conditioned with a "not is new", means we did not move the aggregate
         // to the insert row if it was already positioned there.
         //
-        // This prevented the RowSet implementation from resetting it's column values. We, ourself, formerly
+        // This prevented the RowSet implementation from resetting its column values. We, ourself, formerly
         // did this reset of columns in reset_impl, where we set every column to the ControlDefault, or, if this
         // was not present, to NULL. However, the problem with setting to NULL was #88888#, the problem with
         // _not_ setting to NULL (which was the original fix for #88888#) was #97955#.

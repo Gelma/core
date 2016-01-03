@@ -157,7 +157,7 @@ JobDispatch::~JobDispatch()
 }
 
 /**
-    @short  implementation of XInitalization
+    @short  implementation of XInitialization
     @descr  A protocol handler can provide this functionality, if it wish to get additional information
             about the context it runs. In this case the frame reference would be given by the outside code.
 

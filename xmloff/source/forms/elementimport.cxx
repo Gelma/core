@@ -965,7 +965,7 @@ namespace xmloff
         if ( !m_xElement.is() )
             return;
 
-        // register our control with it's id
+        // register our control with its id
         if (!m_sControlId.isEmpty())
             m_rFormImport.registerControlId(m_xElement, m_sControlId);
         // it's allowed to have no control id. In this case we're importing a column

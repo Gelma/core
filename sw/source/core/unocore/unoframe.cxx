@@ -1205,7 +1205,7 @@ SwXFrame::SwXFrame(FlyCntType eSet, const ::SfxItemPropertySet* pSet, SwDoc *pDo
     // get the property set for the default style data
     // First get the model
     uno::Reference < XModel > xModel = pDoc->GetDocShell()->GetBaseModel();
-    // Ask the model for it's family supplier interface
+    // Ask the model for its family supplier interface
     uno::Reference < XStyleFamiliesSupplier > xFamilySupplier ( xModel, uno::UNO_QUERY );
     // Get the style families
     uno::Reference < XNameAccess > xFamilies = xFamilySupplier->getStyleFamilies();

@@ -228,7 +228,7 @@ published service RowSet
      */
     [optional] interface com::sun::star::sdbc::XResultSetUpdate;
 
-    /** is the interface for deleting more than one row, identified by it's bookmark.
+    /** is the interface for deleting more than one row, identified by its bookmark.
 
         <p>The optional support of this interface is already implied with the support of the com::sun::star::sdbcx::ResultSet service.</p>
 

@@ -1664,7 +1664,7 @@ Rectangle GDIMetaFile::GetBoundRect( OutputDevice& i_rReference, Rectangle* pHai
         case( MetaActionType::FLOATTRANSPARENT ):
         {
             MetaFloatTransparentAction* pAct = static_cast<MetaFloatTransparentAction*>(pAction);
-            // MetaFloatTransparentAction is defined limiting it's content Metafile
+            // MetaFloatTransparentAction is defined limiting its content Metafile
             // to its geometry definition(Point, Size), so use these directly
             const Rectangle aRect( pAct->GetPoint(), pAct->GetSize() );
             ImplActionBounds( aBound, OutputDevice::LogicToLogic( aRect, aMapVDev->GetMapMode(), GetPrefMapMode() ), aClipStack, nullptr );

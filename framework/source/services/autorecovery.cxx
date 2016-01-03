@@ -4145,7 +4145,7 @@ void AutoRecovery::implts_verifyCacheAgainstDesktopDocumentList()
             // insert model into cache ...
             // If the model is already well known inside cache
             // it's information set will be updated by asking the
-            // model again for it's new states.
+            // model again for its new states.
             implts_registerDocument(xModel);
         }
     }
