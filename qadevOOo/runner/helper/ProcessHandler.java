@@ -36,7 +36,7 @@ import util.utils;
  * in case when handling stdout from external
  * <code>Process</code>)
  *
- * This class is currently used by ProcesHandler
+ * This class is currently used by ProcessHandler
  * internally only.
  */
 class Pump extends Thread
