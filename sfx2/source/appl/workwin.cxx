@@ -769,7 +769,7 @@ SvBorder SfxWorkWindow::Arrange_Impl()
         // First, we assume that there is room for the window.
         pCli->nVisible |= SfxChildVisibility::FITS_IN;
 
-        // Skip invisiable windows
+        // Skip invisible windows
         if (pCli->nVisible != SfxChildVisibility::VISIBLE)
             continue;
 
