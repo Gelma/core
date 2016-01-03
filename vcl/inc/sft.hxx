@@ -196,7 +196,7 @@ namespace vcl
         int   vdescent;           /**< typographic descent for vertical writing mode           */
         int   typoAscender;       /**< OS/2 portable typographic ascender                      */
         int   typoDescender;      /**< OS/2 portable typographic descender                     */
-        int   typoLineGap;        /**< OS/2 portable typographc line gap                       */
+        int   typoLineGap;        /**< OS/2 portable typographic line gap                       */
         int   winAscent;          /**< ascender metric for Windows                             */
         int   winDescent;         /**< descender metric for Windows                            */
         bool  symbolEncoded;      /**< true: MS symbol encoded */
