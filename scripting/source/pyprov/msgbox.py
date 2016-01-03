@@ -8,7 +8,7 @@
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 #
 
-# prepare pythoin environnement - Add the path of this class
+# prepare Python environment - Add the path of this class
 from os import path
 from sys import modules
 from sys import path as syspath
