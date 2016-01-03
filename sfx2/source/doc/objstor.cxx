@@ -1926,7 +1926,7 @@ bool SfxObjectShell::DoSaveObjectAs( SfxMedium& rMedium, bool bCommit )
         }
         catch( uno::Exception& )
         {
-            SAL_WARN( "sfx.doc", "The strotage was not committed on DoSaveAs!" );
+            SAL_WARN( "sfx.doc", "The storage was not committed on DoSaveAs!" );
         }
     }
 
