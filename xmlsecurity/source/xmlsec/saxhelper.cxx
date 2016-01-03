@@ -341,7 +341,7 @@ void SAXHelper::ignorableWhitespace( const OUString& aWhitespaces )
 }
 
 /**
- * XDocumentHandler -- preaorocessing instruction
+ * XDocumentHandler -- preprocessing instruction
  */
 void SAXHelper::processingInstruction(
     const OUString& aTarget,
