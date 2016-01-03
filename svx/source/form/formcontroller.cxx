@@ -3380,7 +3380,7 @@ void FormController::stopFiltering()
         Reference< XControl > xControl = pControls[--i];
         if (xControl.is())
         {
-            // now enable eventhandling again
+            // now enable event handling again
             addToEventAttacher(xControl);
 
             Reference< XModeSelector >  xSelector(xControl, UNO_QUERY);
