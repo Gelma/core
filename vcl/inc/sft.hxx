@@ -182,7 +182,7 @@ namespace vcl
         sal_uInt16 macStyle;      /**< macstyle bits from 'HEAD' table */
         int   weight;             /**< value of WeightClass or 0 if can't be determined        */
         int   width;              /**< value of WidthClass or 0 if can't be determined         */
-        int   pitch;              /**< 0: proportianal font, otherwise: monospaced             */
+        int   pitch;              /**< 0: proportional font, otherwise: monospaced             */
         int   italicAngle;        /**< in counter-clockwise degrees * 65536                    */
         int   xMin;               /**< global bounding box: xMin                               */
         int   yMin;               /**< global bounding box: yMin                               */
