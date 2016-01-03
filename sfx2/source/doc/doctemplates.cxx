@@ -802,7 +802,7 @@ bool SfxDocTplService_Impl::createFolder( const OUString& rNewFolderURL,
         // if the parent doesn't exists and bCreateParent is set to true,
         // we try to create the parent and if this was successful, we
         // try to create the new folder again ( but this time, we set
-        // bCreateParent to false to avoid endless recusions )
+        // bCreateParent to false to avoid endless recursions )
         if ( ( aParentURL.getSegmentCount() >= 1 ) &&
                createFolder( aParentURL.GetMainURL( INetURLObject::NO_DECODE ), bCreateParent, bFsysFolder, aParent ) )
         {
