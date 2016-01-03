@@ -988,7 +988,7 @@ private:
 
         Every URL supported by our UCB component can be used here.
         Further it doesn't matter if the file really exists or not.
-        Because removing a non exsistent file will have the same
+        Because removing a non existent file will have the same
         result at the end... a non existing file .-)
 
         On the other side removing of files from disc is an optional
