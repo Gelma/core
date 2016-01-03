@@ -1776,7 +1776,7 @@ void FmXGridPeer::elementReplaced(const ContainerEvent& evt) throw( RuntimeExcep
     // set the model of the new column
     DbGridColumn* pCol = pGrid->GetColumns().at( nNewPos );
 
-    // for initializong this grid column, we need the fields of the grid's data source
+    // for initializing this grid column, we need the fields of the grid's data source
     Reference< XColumnsSupplier > xSuppColumns;
     CursorWrapper* pGridDataSource = pGrid->getDataSource();
     if ( pGridDataSource )
