@@ -30,7 +30,7 @@ from com.sun.star.awt.TextAlign import RIGHT as right
 from com.sun.star.awt import XActionListener
 
 class MsgBox(unohelper.Base):
-    """Inspect UNO object, link to sdk and recusrsive calls"""
+    """Inspect UNO object, link to sdk and recursive calls"""
 
     def __init__(self, aContext):
         """acontext : a Valid UNO context
