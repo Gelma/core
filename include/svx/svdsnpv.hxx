@@ -153,7 +153,7 @@ public:
 
     // Move of an available auxiliary line. Use nHelpLineNum and pPV from PickHelpLine.
     bool BegDragHelpLine(sal_uInt16 nHelpLineNum, SdrPageView* pPV);
-    // interactive insertionof a new auxiliary line
+    // interactive insertion of a new auxiliary line
     bool BegDragHelpLine(const Point& rPnt, SdrHelpLineKind eNewKind);
     Pointer GetDraggedHelpLinePointer() const;
 
