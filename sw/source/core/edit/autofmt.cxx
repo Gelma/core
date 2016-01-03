@@ -2244,7 +2244,7 @@ SwAutoFormat::SwAutoFormat( SwEditShell* pEdShell, SvxSwAutoFormatFlags& rFlags,
                         ( 0 != (nSz = pLRSpace->GetTextFirstLineOfst()) ||
                             0 != pLRSpace->GetTextLeft() ) )
                     {
-                        // exception: numbering/enumation can have an indentation
+                        // exception: numbering/enumeration can have an indentation
                         if( IsEnumericChar( *m_pCurTextNd ))
                         {
                             nLevel = CalcLevel( *m_pCurTextNd, &nDigitLvl );
