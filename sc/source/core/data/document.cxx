@@ -6134,7 +6134,7 @@ void ScDocument::RestorePrintRanges( const ScPrintRangeSaver& rSaver )
 bool ScDocument::NeedPageResetAfterTab( SCTAB nTab ) const
 {
     // The page number count restarts at a sheet, if another template is set at
-    // the preseding one (oly compare names) and if a pagenumber is specified (not 0)
+    // the preceding one (only compare names) and if a pagenumber is specified (not 0)
 
     if ( nTab + 1 < static_cast<SCTAB>(maTabs.size()) && maTabs[nTab] && maTabs[nTab+1] )
     {
