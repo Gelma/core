@@ -1737,7 +1737,7 @@ void SmParser::DoUnOper()
         pSNode->SetScaleMode(SCALE_HEIGHT);
 
         // build nodes for left & right lines
-        // (text, group, level of the used token are of no interrest here)
+        // (text, group, level of the used token are of no interest here)
         // we'll use row & column of the keyword for abs
         aNodeToken.eType = TABS;
 
