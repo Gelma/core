@@ -1414,7 +1414,7 @@ void SmParser::DoTerm(bool bGroupNumberIdent)
                     if (m_aCurToken.eType != TNUMBER &&
                         m_aCurToken.eType != TIDENT)
                     {
-                        // Neither a number nor an indentifier. We just moved to
+                        // Neither a number nor an identifier. We just moved to
                         // the next token, so no need to do that again.
                         moveToNextToken = false;
                         break;
