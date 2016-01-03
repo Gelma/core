@@ -246,7 +246,7 @@ namespace dbaui
 
             Effectively, this method extracts m_xSourceResultSet, m_aSourceSelection, and m_bSourceSelectionBookmarks.
 
-            If an inconsistent/insufficent sub set of those properties is present in the descriptor, and exception
+            If an inconsistent/insufficient sub set of those properties is present in the descriptor, and exception
             is thrown.
         */
         void    impl_extractSourceResultSet_throw(
