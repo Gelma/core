@@ -2792,7 +2792,7 @@ void FmXFormShell::SetDesignMode(bool bDesign)
 
     pFormView->ChangeDesignMode(bDesign);
 
-    // notify listensers
+    // notify listeners
     FmDesignModeChangedHint aChangedHint( bDesign );
     m_pShell->Broadcast(aChangedHint);
 
