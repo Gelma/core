@@ -1784,7 +1784,7 @@ bool SfxObjectShell::DisconnectStorage_Impl( SfxMedium& rSrcMedium, SfxMedium& r
                 // the process of saving a file
                 rSrcMedium.DisableUnlockWebDAV();
                 rSrcMedium.Close();
-                // see comment on the previou third row
+                // see comment on the previous third row
                 rSrcMedium.DisableUnlockWebDAV( false );
 
                 // now try to create the backup
