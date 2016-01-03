@@ -591,7 +591,7 @@ void Desktop::Init()
             // this crack with two (if not more) levels of our own
             // error codes hiding the actual system error code is
             // broken, but that is done all over the code, let's leave
-            // re-enginering that to another year.
+            // reengineering that to another year.
             SetBootstrapError( BE_PATHINFO_MISSING, OUString() );
 #endif
         }
