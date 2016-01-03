@@ -32,6 +32,7 @@
 #include "osx/salinst.h"
 #endif
 #include "outfont.hxx"
+#include "fontattributes.hxx"
 #include "PhysicalFontCollection.hxx"
 #include "quartz/salgdi.h"
 #include "quartz/utils.h"
@@ -86,9 +87,9 @@ CoreTextStyle::CoreTextStyle( const FontSelectPattern& rFSD )
     }
 
     // fake italic
-    if (((pReqFont->GetSlant() == ITALIC_NORMAL) ||
-         (pReqFont->GetSlant() == ITALIC_OBLIQUE)) &&
-        (mpFontData->GetSlant() == ITALIC_NONE))
+    if (((pReqFont->GetSlantType() == ITALIC_NORMAL) ||
+         (pReqFont->GetSlantType() == ITALIC_OBLIQUE)) &&
+        (mpFontData->GetSlantType() == ITALIC_NONE))
     {
         aMatrix = CGAffineTransformConcat(aMatrix, CGAffineTransformMake(1, 0, toRadian(120), 1, 0, 0));
     }
@@ -116,7 +117,7 @@ CoreTextStyle::~CoreTextStyle()
         CFRelease( mpStyleDict );
 }
 
-void CoreTextStyle::GetFontMetric( ImplFontMetricData& rMetric ) const
+void CoreTextStyle::GetFontAttributes( ImplFontAttributes& rFontAttributes ) const
 {
     // get the matching CoreText font handle
     // TODO: is it worth it to cache the CTFontRef in SetFont() and reuse it here?
@@ -124,20 +125,20 @@ void CoreTextStyle::GetFontMetric( ImplFontMetricData& rMetric ) const
 
     const CGFloat fAscent = CTFontGetAscent( aCTFontRef );
     const CGFloat fCapHeight = CTFontGetCapHeight( aCTFontRef );
-    rMetric.mnAscent       = lrint( fAscent );
-    rMetric.mnDescent      = lrint( CTFontGetDescent( aCTFontRef ));
-    rMetric.mnExtLeading   = lrint( CTFontGetLeading( aCTFontRef ));
-    rMetric.mnIntLeading   = lrint( fAscent - fCapHeight );
+    rFontAttributes.SetAscent( lrint( fAscent ) );
+    rFontAttributes.SetDescent( lrint( CTFontGetDescent( aCTFontRef )) );
+    rFontAttributes.SetExternalLeading( lrint( CTFontGetLeading( aCTFontRef )) );
+    rFontAttributes.SetInternalLeading( lrint( fAscent - fCapHeight ) );
 
-    // since ImplFontMetricData::mnWidth is only used for stretching/squeezing fonts
+    // since ImplFontAttributes::mnWidth is only used for stretching/squeezing fonts
     // setting this width to the pixel height of the fontsize is good enough
     // it also makes the calculation of the stretch factor simple
-    rMetric.mnWidth        = lrint( CTFontGetSize( aCTFontRef ) * mfFontStretch);
+    rFontAttributes.SetWidth( lrint( CTFontGetSize( aCTFontRef ) * mfFontStretch) );
 
     // all CoreText fonts are scalable
-    rMetric.mbScalableFont = true;
-    rMetric.mbTrueTypeFont = true; // Not sure, but this field is used only for Windows so far
-    rMetric.mbKernableFont = true;
+    rFontAttributes.SetScalableFlag( true );
+    rFontAttributes.SetTrueTypeFlag( true ); // Not sure, but this field is used only for Windows so far
+    rFontAttributes.SetKernableFlag( true );
 }
 
 bool CoreTextStyle::GetGlyphBoundRect( sal_GlyphId aGlyphId, Rectangle& rRect ) const

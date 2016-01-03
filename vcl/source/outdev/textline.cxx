@@ -56,12 +56,12 @@ bool OutputDevice::ImplIsUnderlineAbove( const vcl::Font& rFont )
 
 void OutputDevice::ImplInitTextLineSize()
 {
-    mpFontEntry->maMetric.ImplInitTextLineSize( this );
+    mpFontEntry->maFontAttributes.ImplInitTextLineSize( this );
 }
 
 void OutputDevice::ImplInitAboveTextLineSize()
 {
-    mpFontEntry->maMetric.ImplInitAboveTextLineSize();
+    mpFontEntry->maFontAttributes.ImplInitAboveTextLineSize();
 }
 
 void OutputDevice::ImplDrawWavePixel( long nOriginX, long nOriginY,
@@ -221,13 +221,13 @@ void OutputDevice::ImplDrawWaveTextLine( long nBaseX, long nBaseY,
 
     if ( bIsAbove )
     {
-        nLineHeight = pFontEntry->maMetric.mnAboveWUnderlineSize;
-        nLinePos = pFontEntry->maMetric.mnAboveWUnderlineOffset;
+        nLineHeight = pFontEntry->maFontAttributes.GetAboveWavelineUnderlineSize();
+        nLinePos = pFontEntry->maFontAttributes.GetAboveWavelineUnderlineOffset();
     }
     else
     {
-        nLineHeight = pFontEntry->maMetric.mnWUnderlineSize;
-        nLinePos = pFontEntry->maMetric.mnWUnderlineOffset;
+        nLineHeight = pFontEntry->maFontAttributes.GetWavelineUnderlineSize();
+        nLinePos = pFontEntry->maFontAttributes.GetWavelineUnderlineOffset();
     }
     if ( (eTextLine == UNDERLINE_SMALLWAVE) && (nLineHeight > 3) )
         nLineHeight = 3;
@@ -303,13 +303,13 @@ void OutputDevice::ImplDrawStraightTextLine( long nBaseX, long nBaseY,
     case UNDERLINE_DASHDOTDOT:
         if ( bIsAbove )
         {
-            nLineHeight = pFontEntry->maMetric.mnAboveUnderlineSize;
-            nLinePos    = nY + pFontEntry->maMetric.mnAboveUnderlineOffset;
+            nLineHeight = pFontEntry->maFontAttributes.GetAboveUnderlineSize();
+            nLinePos    = nY + pFontEntry->maFontAttributes.GetAboveUnderlineOffset();
         }
         else
         {
-            nLineHeight = pFontEntry->maMetric.mnUnderlineSize;
-            nLinePos    = nY + pFontEntry->maMetric.mnUnderlineOffset;
+            nLineHeight = pFontEntry->maFontAttributes.GetUnderlineSize();
+            nLinePos    = nY + pFontEntry->maFontAttributes.GetUnderlineOffset();
         }
         break;
     case UNDERLINE_BOLD:
@@ -320,27 +320,27 @@ void OutputDevice::ImplDrawStraightTextLine( long nBaseX, long nBaseY,
     case UNDERLINE_BOLDDASHDOTDOT:
         if ( bIsAbove )
         {
-            nLineHeight = pFontEntry->maMetric.mnAboveBUnderlineSize;
-            nLinePos    = nY + pFontEntry->maMetric.mnAboveBUnderlineOffset;
+            nLineHeight = pFontEntry->maFontAttributes.GetAboveBoldUnderlineSize();
+            nLinePos    = nY + pFontEntry->maFontAttributes.GetAboveBoldUnderlineOffset();
         }
         else
         {
-            nLineHeight = pFontEntry->maMetric.mnBUnderlineSize;
-            nLinePos    = nY + pFontEntry->maMetric.mnBUnderlineOffset;
+            nLineHeight = pFontEntry->maFontAttributes.GetBoldUnderlineSize();
+            nLinePos    = nY + pFontEntry->maFontAttributes.GetBoldUnderlineOffset();
         }
         break;
     case UNDERLINE_DOUBLE:
         if ( bIsAbove )
         {
-            nLineHeight = pFontEntry->maMetric.mnAboveDUnderlineSize;
-            nLinePos    = nY + pFontEntry->maMetric.mnAboveDUnderlineOffset1;
-            nLinePos2   = nY + pFontEntry->maMetric.mnAboveDUnderlineOffset2;
+            nLineHeight = pFontEntry->maFontAttributes.GetAboveDoubleUnderlineSize();
+            nLinePos    = nY + pFontEntry->maFontAttributes.GetAboveDoubleUnderlineOffset1();
+            nLinePos2   = nY + pFontEntry->maFontAttributes.GetAboveDoubleUnderlineOffset2();
         }
         else
         {
-            nLineHeight = pFontEntry->maMetric.mnDUnderlineSize;
-            nLinePos    = nY + pFontEntry->maMetric.mnDUnderlineOffset1;
-            nLinePos2   = nY + pFontEntry->maMetric.mnDUnderlineOffset2;
+            nLineHeight = pFontEntry->maFontAttributes.GetDoubleUnderlineSize();
+            nLinePos    = nY + pFontEntry->maFontAttributes.GetDoubleUnderlineOffset1();
+            nLinePos2   = nY + pFontEntry->maFontAttributes.GetDoubleUnderlineOffset2();
         }
         break;
     default:
@@ -538,17 +538,17 @@ void OutputDevice::ImplDrawStrikeoutLine( long nBaseX, long nBaseY,
     switch ( eStrikeout )
     {
     case STRIKEOUT_SINGLE:
-        nLineHeight = pFontEntry->maMetric.mnStrikeoutSize;
-        nLinePos    = nY + pFontEntry->maMetric.mnStrikeoutOffset;
+        nLineHeight = pFontEntry->maFontAttributes.GetStrikeoutSize();
+        nLinePos    = nY + pFontEntry->maFontAttributes.GetStrikeoutOffset();
         break;
     case STRIKEOUT_BOLD:
-        nLineHeight = pFontEntry->maMetric.mnBStrikeoutSize;
-        nLinePos    = nY + pFontEntry->maMetric.mnBStrikeoutOffset;
+        nLineHeight = pFontEntry->maFontAttributes.GetBoldStrikeoutSize();
+        nLinePos    = nY + pFontEntry->maFontAttributes.GetBoldStrikeoutOffset();
         break;
     case STRIKEOUT_DOUBLE:
-        nLineHeight = pFontEntry->maMetric.mnDStrikeoutSize;
-        nLinePos    = nY + pFontEntry->maMetric.mnDStrikeoutOffset1;
-        nLinePos2   = nY + pFontEntry->maMetric.mnDStrikeoutOffset2;
+        nLineHeight = pFontEntry->maFontAttributes.GetDoubleStrikeoutSize();
+        nLinePos    = nY + pFontEntry->maFontAttributes.GetDoubleStrikeoutOffset1();
+        nLinePos2   = nY + pFontEntry->maFontAttributes.GetDoubleStrikeoutOffset2();
         break;
     default:
         break;
@@ -652,8 +652,8 @@ void OutputDevice::ImplDrawStrikeoutChar( long nBaseX, long nBaseY,
     Rectangle aPixelRect;
     aPixelRect.Left() = nBaseX+mnTextOffX;
     aPixelRect.Right() = aPixelRect.Left()+nWidth;
-    aPixelRect.Bottom() = nBaseY+mpFontEntry->maMetric.mnDescent;
-    aPixelRect.Top() = nBaseY-mpFontEntry->maMetric.mnAscent;
+    aPixelRect.Bottom() = nBaseY+mpFontEntry->maFontAttributes.GetDescent();
+    aPixelRect.Top() = nBaseY-mpFontEntry->maFontAttributes.GetAscent();
 
     if (mpFontEntry->mnOrientation)
     {
@@ -1043,9 +1043,9 @@ void OutputDevice::DrawWaveLine( const Point& rStartPos, const Point& rEndPos )
 
     // #109280# make sure the waveline does not exceed the descent to avoid paint problems
     ImplFontEntry* pFontEntry = mpFontEntry;
-    if( nWaveHeight > pFontEntry->maMetric.mnWUnderlineSize )
+    if( nWaveHeight > pFontEntry->maFontAttributes.GetWavelineUnderlineSize() )
     {
-        nWaveHeight = pFontEntry->maMetric.mnWUnderlineSize;
+        nWaveHeight = pFontEntry->maFontAttributes.GetWavelineUnderlineSize();
     }
     ImplDrawWaveLine(nStartX, nStartY, 0, 0,
                      nEndX-nStartX, nWaveHeight,

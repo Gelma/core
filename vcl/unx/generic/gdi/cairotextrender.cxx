@@ -444,7 +444,7 @@ FontConfigFontOptions* GetFCFontOptions( const ImplFontAttributes& rFontAttribut
     psp::FastPrintFontInfo aInfo;
 
     aInfo.m_aFamilyName = rFontAttributes.GetFamilyName();
-    aInfo.m_eItalic = rFontAttributes.GetSlant();
+    aInfo.m_eItalic = rFontAttributes.GetSlantType();
     aInfo.m_eWeight = rFontAttributes.GetWeight();
     aInfo.m_eWidth = rFontAttributes.GetWidthType();
 
@@ -452,7 +452,7 @@ FontConfigFontOptions* GetFCFontOptions( const ImplFontAttributes& rFontAttribut
 }
 
 void
-CairoTextRender::GetFontMetric( ImplFontMetricData *pMetric, int nFallbackLevel )
+CairoTextRender::GetFontAttributes( ImplFontAttributes *pFontAttributes, int nFallbackLevel )
 {
     if( nFallbackLevel >= MAX_FALLBACK )
         return;
@@ -460,7 +460,7 @@ CairoTextRender::GetFontMetric( ImplFontMetricData *pMetric, int nFallbackLevel 
     if( mpServerFont[nFallbackLevel] != nullptr )
     {
         long rDummyFactor;
-        mpServerFont[nFallbackLevel]->FetchFontMetric( *pMetric, rDummyFactor );
+        mpServerFont[nFallbackLevel]->FetchFontAttributes( *pFontAttributes, rDummyFactor );
     }
 }
 

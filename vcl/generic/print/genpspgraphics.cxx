@@ -50,6 +50,7 @@
 #include "impfont.hxx"
 #include "langboost.hxx"
 #include "outfont.hxx"
+#include "fontattributes.hxx"
 #include "PhysicalFontCollection.hxx"
 #include "PhysicalFontFace.hxx"
 #include "salbmp.hxx"
@@ -801,7 +802,7 @@ sal_uInt16 GenPspGraphics::SetFont( FontSelectPattern *pEntry, int nFallbackLeve
     // determine which font attributes need to be emulated
     bool bArtItalic = false;
     bool bArtBold = false;
-    if( pEntry->GetSlant() == ITALIC_OBLIQUE || pEntry->GetSlant() == ITALIC_NORMAL )
+    if( pEntry->GetSlantType() == ITALIC_OBLIQUE || pEntry->GetSlantType() == ITALIC_NORMAL )
     {
         FontItalic eItalic = m_pPrinterGfx->GetFontMgr().getFontItalic( nID );
         if( eItalic != ITALIC_NORMAL && eItalic != ITALIC_OBLIQUE )
@@ -911,7 +912,7 @@ void GenPspGraphics::ClearDevFontCache()
     GlyphCache::GetInstance().ClearFontCache();
 }
 
-void GenPspGraphics::GetFontMetric( ImplFontMetricData *pMetric, int )
+void GenPspGraphics::GetFontAttributes( ImplFontAttributes *pFontAttributes, int )
 {
     const psp::PrintFontManager& rMgr = psp::PrintFontManager::get();
     psp::PrintFontInfo aInfo;
@@ -919,24 +920,24 @@ void GenPspGraphics::GetFontMetric( ImplFontMetricData *pMetric, int )
     if (rMgr.getFontInfo (m_pPrinterGfx->GetFontID(), aInfo))
     {
         ImplFontAttributes aDFA = Info2FontAttributes( aInfo );
-        static_cast<ImplFontAttributes&>(*pMetric) = aDFA;
-        pMetric->mbDevice       = aDFA.IsBuiltInFont();
-        pMetric->mbScalableFont = true;
-        pMetric->mbTrueTypeFont = false; // FIXME, needed?
+        static_cast<ImplFontAttributes&>(*pFontAttributes) = aDFA;
+        pFontAttributes->SetBuiltInFontFlag( aDFA.IsBuiltInFont() );
+        pFontAttributes->SetScalableFlag( true );
+        pFontAttributes->SetTrueTypeFlag( false ); // FIXME, needed?
 
-        pMetric->mnOrientation  = m_pPrinterGfx->GetFontAngle();
-        pMetric->mnSlant        = 0;
+        pFontAttributes->SetOrientation( m_pPrinterGfx->GetFontAngle() );
+        pFontAttributes->SetSlant( 0 );
 
         sal_Int32 nTextHeight   = m_pPrinterGfx->GetFontHeight();
         sal_Int32 nTextWidth    = m_pPrinterGfx->GetFontWidth();
         if( ! nTextWidth )
             nTextWidth = nTextHeight;
 
-        pMetric->mnWidth        = nTextWidth;
-        pMetric->mnAscent       = ( aInfo.m_nAscend * nTextHeight + 500 ) / 1000;
-        pMetric->mnDescent      = ( aInfo.m_nDescend * nTextHeight + 500 ) / 1000;
-        pMetric->mnIntLeading   = ( aInfo.m_nLeading * nTextHeight + 500 ) / 1000;
-        pMetric->mnExtLeading   = 0;
+        pFontAttributes->SetWidth( nTextWidth );
+        pFontAttributes->SetAscent( ( aInfo.m_nAscend * nTextHeight + 500 ) / 1000 );
+        pFontAttributes->SetDescent( ( aInfo.m_nDescend * nTextHeight + 500 ) / 1000 );
+        pFontAttributes->SetInternalLeading( ( aInfo.m_nLeading * nTextHeight + 500 ) / 1000 );
+        pFontAttributes->SetExternalLeading( 0 );
     }
 }
 

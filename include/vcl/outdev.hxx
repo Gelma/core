@@ -94,7 +94,7 @@ struct SalTwoRect;
 class VirtualDevice;
 class Printer;
 class FontSelectPattern;
-class ImplFontMetricData;
+class ImplFontAttributes;
 class VCLXGraphics;
 class OutDevStateStack;
 struct BitmapSystemData;
@@ -1249,7 +1249,7 @@ private:
 
 public:
 
-    vcl::FontInfo               GetDevFont( int nDevFontIndex ) const;
+    FontMetric                  GetDevFont( int nDevFontIndex ) const;
     int                         GetDevFontCount() const;
 
     bool                        IsFontAvailable( const OUString& rFontName ) const;

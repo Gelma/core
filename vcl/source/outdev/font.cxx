@@ -33,6 +33,7 @@
 #include "impfont.hxx"
 #include "outdata.hxx"
 #include "outfont.hxx"
+#include "fontattributes.hxx"
 
 #include "outdev.h"
 #include "window.h"
@@ -61,9 +62,9 @@ using namespace ::com::sun::star::uno;
 using namespace ::rtl;
 using namespace ::utl;
 
-vcl::FontInfo OutputDevice::GetDevFont( int nDevFontIndex ) const
+FontMetric OutputDevice::GetDevFont( int nDevFontIndex ) const
 {
-    vcl::FontInfo aFontInfo;
+    FontMetric aFontMetric;
 
     ImplInitFontList();
 
@@ -71,21 +72,21 @@ vcl::FontInfo OutputDevice::GetDevFont( int nDevFontIndex ) const
     if( nDevFontIndex < nCount )
     {
         const PhysicalFontFace& rData = *mpDeviceFontList->Get( nDevFontIndex );
-        aFontInfo.SetName( rData.GetFamilyName() );
-        aFontInfo.SetStyleName( rData.GetStyleName() );
-        aFontInfo.SetCharSet( rData.IsSymbolFont() ? RTL_TEXTENCODING_SYMBOL : RTL_TEXTENCODING_UNICODE );
-        aFontInfo.SetFamily( rData.GetFamilyType() );
-        aFontInfo.SetPitch( rData.GetPitch() );
-        aFontInfo.SetWeight( rData.GetWeight() );
-        aFontInfo.SetItalic( rData.GetSlant() );
-        aFontInfo.SetWidthType( rData.GetWidthType() );
+        aFontMetric.SetName( rData.GetFamilyName() );
+        aFontMetric.SetStyleName( rData.GetStyleName() );
+        aFontMetric.SetCharSet( rData.IsSymbolFont() ? RTL_TEXTENCODING_SYMBOL : RTL_TEXTENCODING_UNICODE );
+        aFontMetric.SetFamily( rData.GetFamilyType() );
+        aFontMetric.SetPitch( rData.GetPitch() );
+        aFontMetric.SetWeight( rData.GetWeight() );
+        aFontMetric.SetItalic( rData.GetSlantType() );
+        aFontMetric.SetWidthType( rData.GetWidthType() );
         if( rData.IsScalable() )
-            aFontInfo.mpImplMetric->mnMiscFlags |= ImplFontMetric::SCALABLE_FLAG;
+            aFontMetric.mpImplMetric->mnMiscFlags |= ImplFontMetric::SCALABLE_FLAG;
         if( rData.IsBuiltInFont() )
-            aFontInfo.mpImplMetric->mnMiscFlags |= ImplFontMetric::DEVICE_FLAG;
+            aFontMetric.mpImplMetric->mnMiscFlags |= ImplFontMetric::DEVICE_FLAG;
     }
 
-    return aFontInfo;
+    return aFontMetric;
 }
 
 int OutputDevice::GetDevFontCount() const
@@ -188,43 +189,43 @@ FontMetric OutputDevice::GetFontMetric() const
         return aMetric;
 
     ImplFontEntry*      pEntry = mpFontEntry;
-    ImplFontMetricData* pMetric = &(pEntry->maMetric);
+    ImplFontAttributes* pFontAttributes = &(pEntry->maFontAttributes);
 
     // prepare metric
     aMetric.Font::operator=( maFont );
 
     // set aMetric with info from font
     aMetric.SetName( maFont.GetName() );
-    aMetric.SetStyleName( pMetric->GetStyleName() );
-    aMetric.SetSize( PixelToLogic( Size( pMetric->mnWidth, pMetric->mnAscent+pMetric->mnDescent-pMetric->mnIntLeading ) ) );
-    aMetric.SetCharSet( pMetric->IsSymbolFont() ? RTL_TEXTENCODING_SYMBOL : RTL_TEXTENCODING_UNICODE );
-    aMetric.SetFamily( pMetric->GetFamilyType() );
-    aMetric.SetPitch( pMetric->GetPitch() );
-    aMetric.SetWeight( pMetric->GetWeight() );
-    aMetric.SetItalic( pMetric->GetSlant() );
-    aMetric.SetWidthType( pMetric->GetWidthType() );
+    aMetric.SetStyleName( pFontAttributes->GetStyleName() );
+    aMetric.SetSize( PixelToLogic( Size( pFontAttributes->GetWidth(), pFontAttributes->GetAscent() + pFontAttributes->GetDescent() - pFontAttributes->GetInternalLeading() ) ) );
+    aMetric.SetCharSet( pFontAttributes->IsSymbolFont() ? RTL_TEXTENCODING_SYMBOL : RTL_TEXTENCODING_UNICODE );
+    aMetric.SetFamily( pFontAttributes->GetFamilyType() );
+    aMetric.SetPitch( pFontAttributes->GetPitch() );
+    aMetric.SetWeight( pFontAttributes->GetWeight() );
+    aMetric.SetItalic( pFontAttributes->GetSlantType() );
+    aMetric.SetWidthType( pFontAttributes->GetWidthType() );
     if ( pEntry->mnOwnOrientation )
         aMetric.SetOrientation( pEntry->mnOwnOrientation );
     else
-        aMetric.SetOrientation( pMetric->mnOrientation );
-    if( !pEntry->maMetric.mbKernableFont )
+        aMetric.SetOrientation( pFontAttributes->GetOrientation() );
+    if( !pEntry->maFontAttributes.IsKernable() )
          aMetric.SetKerning( maFont.GetKerning() & ~FontKerning::FontSpecific );
 
     // set remaining metric fields
     aMetric.mpImplMetric->mnMiscFlags   = 0;
-    if( pMetric->mbDevice )
+    if( pFontAttributes->IsBuiltInFont() )
             aMetric.mpImplMetric->mnMiscFlags |= ImplFontMetric::DEVICE_FLAG;
-    if( pMetric->mbScalableFont )
+    if( pFontAttributes->IsScalable() )
             aMetric.mpImplMetric->mnMiscFlags |= ImplFontMetric::SCALABLE_FLAG;
-    if ( pMetric->mbFullstopCentered)
+    if( pFontAttributes->IsFullstopCentered())
             aMetric.mpImplMetric->mnMiscFlags |= ImplFontMetric::FULLSTOP_CENTERED_FLAG;
-    aMetric.mpImplMetric->mnBulletOffset= pMetric->mnBulletOffset;
-    aMetric.mpImplMetric->mnAscent      = ImplDevicePixelToLogicHeight( pMetric->mnAscent+mnEmphasisAscent );
-    aMetric.mpImplMetric->mnDescent     = ImplDevicePixelToLogicHeight( pMetric->mnDescent+mnEmphasisDescent );
-    aMetric.mpImplMetric->mnIntLeading  = ImplDevicePixelToLogicHeight( pMetric->mnIntLeading+mnEmphasisAscent );
-    aMetric.mpImplMetric->mnExtLeading  = ImplDevicePixelToLogicHeight( GetFontExtLeading() );
-    aMetric.mpImplMetric->mnLineHeight  = ImplDevicePixelToLogicHeight( pMetric->mnAscent+pMetric->mnDescent+mnEmphasisAscent+mnEmphasisDescent );
-    aMetric.mpImplMetric->mnSlant       = ImplDevicePixelToLogicHeight( pMetric->mnSlant );
+    aMetric.mpImplMetric->mnBulletOffset = pFontAttributes->GetBulletOffset();
+    aMetric.mpImplMetric->mnAscent       = ImplDevicePixelToLogicHeight( pFontAttributes->GetAscent() + mnEmphasisAscent );
+    aMetric.mpImplMetric->mnDescent      = ImplDevicePixelToLogicHeight( pFontAttributes->GetDescent() + mnEmphasisDescent );
+    aMetric.mpImplMetric->mnIntLeading   = ImplDevicePixelToLogicHeight( pFontAttributes->GetInternalLeading() + mnEmphasisAscent );
+    aMetric.mpImplMetric->mnExtLeading   = ImplDevicePixelToLogicHeight( GetFontExtLeading() );
+    aMetric.mpImplMetric->mnLineHeight   = ImplDevicePixelToLogicHeight( pFontAttributes->GetAscent() + pFontAttributes->GetDescent() + mnEmphasisAscent + mnEmphasisDescent );
+    aMetric.mpImplMetric->mnSlant        = ImplDevicePixelToLogicHeight( pFontAttributes->GetSlant() );
 
     SAL_INFO("vcl.gdi.fontmetric", "OutputDevice::GetFontMetric:" << aMetric);
 
@@ -484,9 +485,9 @@ FontEmphasisMark OutputDevice::ImplGetEmphasisMarkStyle( const vcl::Font& rFont 
 long OutputDevice::GetFontExtLeading() const
 {
     ImplFontEntry*      pEntry = mpFontEntry;
-    ImplFontMetricData* pMetric = &(pEntry->maMetric);
+    ImplFontAttributes* pFontAttributes = &(pEntry->maFontAttributes);
 
-    return pMetric->mnExtLeading;
+    return pFontAttributes->GetExternalLeading();
 }
 
 void OutputDevice::ImplClearFontData( const bool bNewFontLists )
@@ -980,7 +981,7 @@ vcl::Font OutputDevice::GetDefaultFont( DefaultFontType nType, LanguageType eLan
 ImplFontEntry::ImplFontEntry( const FontSelectPattern& rFontSelData )
     : m_pFontCache(nullptr)
     , maFontSelData( rFontSelData )
-    , maMetric( rFontSelData )
+    , maFontAttributes( rFontSelData )
     , mpConversion( nullptr )
     , mnLineHeight( 0 )
     , mnRefCount( 1 )
@@ -1132,7 +1133,7 @@ size_t FontSelectPatternAttributes::hashCode() const
     }
     nHash += 11 * mnHeight;
     nHash += 19 * GetWeight();
-    nHash += 29 * GetSlant();
+    nHash += 29 * GetSlantType();
     nHash += 37 * mnOrientation;
     nHash += 41 * meLanguage;
     if( mbVertical )
@@ -1200,7 +1201,7 @@ bool ImplFontCache::IFSD_Equal::operator()(const FontSelectPattern& rA, const Fo
 
     // check font face attributes
     if( (rA.GetWeight()       != rB.GetWeight())
-    ||  (rA.GetSlant()       != rB.GetSlant())
+    ||  (rA.GetSlantType()    != rB.GetSlantType())
 //  ||  (rA.meFamily       != rB.meFamily) // TODO: remove this mostly obsolete member
     ||  (rA.GetPitch()     != rB.GetPitch()) )
         return false;
@@ -1598,13 +1599,13 @@ bool OutputDevice::ImplNewFont() const
         {
             pFontEntry->mbInit = true;
 
-            pFontEntry->maMetric.mnOrientation  = sal::static_int_cast<short>(pFontEntry->maFontSelData.mnOrientation);
-            pGraphics->GetFontMetric( &(pFontEntry->maMetric) );
+            pFontEntry->maFontAttributes.SetOrientation( sal::static_int_cast<short>(pFontEntry->maFontSelData.mnOrientation) );
+            pGraphics->GetFontAttributes( &(pFontEntry->maFontAttributes) );
 
-            pFontEntry->maMetric.ImplInitTextLineSize( this );
-            pFontEntry->maMetric.ImplInitAboveTextLineSize();
+            pFontEntry->maFontAttributes.ImplInitTextLineSize( this );
+            pFontEntry->maFontAttributes.ImplInitAboveTextLineSize();
 
-            pFontEntry->mnLineHeight = pFontEntry->maMetric.mnAscent + pFontEntry->maMetric.mnDescent;
+            pFontEntry->mnLineHeight = pFontEntry->maFontAttributes.GetAscent() + pFontEntry->maFontAttributes.GetDescent();
 
             SetFontOrientation( pFontEntry );
         }
@@ -1614,11 +1615,14 @@ bool OutputDevice::ImplNewFont() const
     if ( maFont.GetKerning() & FontKerning::FontSpecific )
     {
         // TODO: test if physical font supports kerning and disable if not
-        if( pFontEntry->maMetric.mbKernableFont )
+        if( pFontEntry->maFontAttributes.IsKernable() )
             mbKerning = true;
     }
     else
+    {
         mbKerning = false;
+    }
+
     if ( maFont.GetKerning() & FontKerning::Asian )
         mbKerning = true;
 
@@ -1647,7 +1651,7 @@ bool OutputDevice::ImplNewFont() const
     else if ( eAlign == ALIGN_TOP )
     {
         mnTextOffX = 0;
-        mnTextOffY = +pFontEntry->maMetric.mnAscent + mnEmphasisAscent;
+        mnTextOffY = +pFontEntry->maFontAttributes.GetAscent() + mnEmphasisAscent;
         if ( pFontEntry->mnOrientation )
         {
             Point aOriginPt(0, 0);
@@ -1657,7 +1661,7 @@ bool OutputDevice::ImplNewFont() const
     else // eAlign == ALIGN_BOTTOM
     {
         mnTextOffX = 0;
-        mnTextOffY = -pFontEntry->maMetric.mnDescent + mnEmphasisDescent;
+        mnTextOffY = -pFontEntry->maFontAttributes.GetDescent() + mnEmphasisDescent;
         if ( pFontEntry->mnOrientation )
         {
             Point aOriginPt(0, 0);
@@ -1675,7 +1679,7 @@ bool OutputDevice::ImplNewFont() const
     // #95414# fix for OLE objects which use scale factors very creatively
     if( mbMap && !aSize.Width() )
     {
-        int nOrigWidth = pFontEntry->maMetric.mnWidth;
+        int nOrigWidth = pFontEntry->maFontAttributes.GetWidth();
         float fStretch = (float)maMapRes.mnMapScNumX * maMapRes.mnMapScDenomY;
         fStretch /= (float)maMapRes.mnMapScNumY * maMapRes.mnMapScDenomX;
         int nNewWidth = (int)(nOrigWidth * fStretch + 0.5);
@@ -1696,14 +1700,14 @@ bool OutputDevice::ImplNewFont() const
 
 void OutputDevice::SetFontOrientation( ImplFontEntry* const pFontEntry ) const
 {
-    if( pFontEntry->maFontSelData.mnOrientation && !pFontEntry->maMetric.mnOrientation )
+    if( pFontEntry->maFontSelData.mnOrientation && !pFontEntry->maFontAttributes.GetOrientation() )
     {
         pFontEntry->mnOwnOrientation = sal::static_int_cast<short>(pFontEntry->maFontSelData.mnOrientation);
         pFontEntry->mnOrientation = pFontEntry->mnOwnOrientation;
     }
     else
     {
-        pFontEntry->mnOrientation = pFontEntry->maMetric.mnOrientation;
+        pFontEntry->mnOrientation = pFontEntry->maFontAttributes.GetOrientation();
     }
 }
 
@@ -1736,9 +1740,8 @@ bool ImplFontAttributes::CompareDeviceIndependentFontAttributes(const ImplFontAt
     return true;
 }
 
-ImplFontMetricData::ImplFontMetricData( const FontSelectPattern& rFontSelData )
-    : ImplFontAttributes( rFontSelData )
-    , mnWidth ( rFontSelData.mnWidth)
+ImplFontAttributes::ImplFontAttributes( const FontSelectPattern& rFontSelData )
+    : mnWidth ( rFontSelData.mnWidth)
     , mnOrientation( (short)(rFontSelData.mnOrientation))
     , mnAscent( 0 )
     , mnDescent( 0 )
@@ -1746,7 +1749,6 @@ ImplFontMetricData::ImplFontMetricData( const FontSelectPattern& rFontSelData )
     , mnExtLeading( 0 )
     , mnSlant( 0 )
     , mnMinKashida( 0 )
-    , meFamilyType(FAMILY_DONTKNOW)
     , mbScalableFont(false)
     , mbTrueTypeFont(false)
     , mbFullstopCentered(false)
@@ -1782,21 +1784,21 @@ ImplFontMetricData::ImplFontMetricData( const FontSelectPattern& rFontSelData )
     {
         SetFamilyName( rFontSelData.mpFontData->GetFamilyName() );
         SetStyleName( rFontSelData.mpFontData->GetStyleName() );
-        mbDevice   = rFontSelData.mpFontData->IsBuiltInFont();
-        mbKernableFont = true;
+        SetBuiltInFontFlag( rFontSelData.mpFontData->IsBuiltInFont() );
+        SetKernableFlag( true );
     }
     else
     {
         sal_Int32 nTokenPos = 0;
         SetFamilyName( GetNextFontToken( rFontSelData.GetFamilyName(), nTokenPos ) );
         SetStyleName( rFontSelData.GetStyleName() );
-        mbDevice   = false;
-        mbKernableFont = false;
+        SetBuiltInFontFlag( false );
+        SetKernableFlag( false );
     }
 }
 
 
-void ImplFontMetricData::ImplInitTextLineSize( const OutputDevice* pDev )
+void ImplFontAttributes::ImplInitTextLineSize( const OutputDevice* pDev )
 {
     long nDescent = mnDescent;
     if ( nDescent <= 0 )
@@ -1864,9 +1866,8 @@ void ImplFontMetricData::ImplInitTextLineSize( const OutputDevice* pDev )
     else
         mnWUnderlineSize = ((nWCalcSize*50)+50) / 100;
 
-    // #109280# the following line assures that wavelines are never placed below the descent, however
-    // for most fonts the waveline then is drawn into the text, so we better keep the old solution
-    // pFontEntry->maMetric.mnWUnderlineOffset     = pFontEntry->maMetric.mnDescent + 1 - pFontEntry->maMetric.mnWUnderlineSize;
+    // Don't assume that wavelines are never placed below the descent, because for most fonts the waveline
+    // is drawn into the text
     mnWUnderlineOffset     = nUnderlineOffset;
 
     mnStrikeoutSize        = nLineHeight;
@@ -1892,13 +1893,13 @@ void ImplFontMetricData::ImplInitTextLineSize( const OutputDevice* pDev )
         // In general, nB/nH < 5% for most Japanese fonts.
         bCentered = nB > (((nH >> 1)+nH)>>3);
     }
-    mbFullstopCentered = bCentered ;
+    SetFullstopCenteredFlag( bCentered );
 
     mnBulletOffset = ( pDev->GetTextWidth( OUString( sal_Unicode( 0x20 ) ) ) - pDev->GetTextWidth( OUString( sal_Unicode( 0xb7 ) ) ) ) >> 1 ;
 
 }
 
-void ImplFontMetricData::ImplInitAboveTextLineSize()
+void ImplFontAttributes::ImplInitAboveTextLineSize()
 {
     long nIntLeading = mnIntLeading;
     // TODO: assess usage of nLeading below (changed in extleading CWS)
@@ -2034,9 +2035,9 @@ void OutputDevice::ImplDrawEmphasisMarks( SalLayout& rSalLayout )
     Point aOffset = Point(0,0);
 
     if ( nEmphasisMark & EMPHASISMARK_POS_BELOW )
-        aOffset.Y() += mpFontEntry->maMetric.mnDescent + nEmphasisYOff;
+        aOffset.Y() += mpFontEntry->maFontAttributes.GetDescent() + nEmphasisYOff;
     else
-        aOffset.Y() -= mpFontEntry->maMetric.mnAscent + nEmphasisYOff;
+        aOffset.Y() -= mpFontEntry->maFontAttributes.GetAscent() + nEmphasisYOff;
 
     long nEmphasisWidth2  = nEmphasisWidth / 2;
     long nEmphasisHeight2 = nEmphasisHeight / 2;
@@ -2198,8 +2199,8 @@ long OutputDevice::GetMinKashida() const
         return 0;
 
     ImplFontEntry*      pEntry = mpFontEntry;
-    ImplFontMetricData* pMetric = &(pEntry->maMetric);
-    return ImplDevicePixelToLogicWidth( pMetric->mnMinKashida );
+    ImplFontAttributes* pFontAttributes = &(pEntry->maFontAttributes);
+    return ImplDevicePixelToLogicWidth( pFontAttributes->GetMinKashida() );
 }
 
 sal_Int32 OutputDevice::ValidateKashidas ( const OUString& rTxt,

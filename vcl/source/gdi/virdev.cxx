@@ -564,9 +564,9 @@ long VirtualDevice::GetFontExtLeading() const
 #endif
 
     ImplFontEntry*      pEntry = mpFontEntry;
-    ImplFontMetricData* pMetric = &(pEntry->maMetric);
+    ImplFontAttributes* pFontAttributes = &(pEntry->maFontAttributes);
 
-    return pMetric->mnExtLeading;
+    return pFontAttributes->GetExternalLeading();
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

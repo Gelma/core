@@ -68,59 +68,51 @@ bool ImplFontMetric::operator==( const ImplFontMetric& r ) const
     return true;
 }
 
-namespace vcl {
-
-FontInfo::FontInfo()
+FontMetric::FontMetric()
 :   mpImplMetric( new ImplFontMetric )
 {}
 
-FontInfo::FontInfo( const FontInfo& rInfo )
-:  Font( rInfo )
+FontMetric::FontMetric( const FontMetric& rFontMetric )
+:  Font( rFontMetric )
 {
-    mpImplMetric = rInfo.mpImplMetric;
+    mpImplMetric = rFontMetric.mpImplMetric;
     mpImplMetric->AddReference();
 }
 
-FontInfo::~FontInfo()
+FontMetric::~FontMetric()
 {
     mpImplMetric->DeReference();
 }
 
-FontInfo& FontInfo::operator=( const FontInfo& rInfo )
+FontMetric& FontMetric::operator=( const FontMetric& rFontMetric )
 {
-    Font::operator=( rInfo );
+    Font::operator=( rFontMetric );
 
-    if( mpImplMetric != rInfo.mpImplMetric )
+    if( mpImplMetric != rFontMetric.mpImplMetric )
     {
         mpImplMetric->DeReference();
-        mpImplMetric = rInfo.mpImplMetric;
+        mpImplMetric = rFontMetric.mpImplMetric;
         mpImplMetric->AddReference();
     }
 
     return *this;
 }
 
-bool FontInfo::operator==( const FontInfo& rInfo ) const
+bool FontMetric::operator==( const FontMetric& rFontMetric ) const
 {
-    if( !Font::operator==( rInfo ) )
+    if( !Font::operator==( rFontMetric ) )
         return false;
-    if( mpImplMetric == rInfo.mpImplMetric )
+    if( mpImplMetric == rFontMetric.mpImplMetric )
         return true;
-    if( *mpImplMetric == *rInfo.mpImplMetric  )
+    if( *mpImplMetric == *rFontMetric.mpImplMetric  )
         return true;
     return false;
 }
 
-FontType FontInfo::GetType() const
+FontType FontMetric::GetType() const
 {
     return (mpImplMetric->IsScalable() ? TYPE_SCALABLE : TYPE_RASTER);
 }
-
-}
-
-FontMetric::FontMetric( const FontMetric& rMetric ):
-    vcl::FontInfo( rMetric )
-{}
 
 long FontMetric::GetAscent() const
 {
@@ -160,17 +152,6 @@ bool FontMetric::IsFullstopCentered() const
 long FontMetric::GetBulletOffset() const
 {
     return mpImplMetric->GetBulletOffset();
-}
-
-FontMetric& FontMetric::operator =( const FontMetric& rMetric )
-{
-    vcl::FontInfo::operator=( rMetric );
-    return *this;
-}
-
-bool FontMetric::operator==( const FontMetric& rMetric ) const
-{
-    return vcl::FontInfo::operator==( rMetric );
 }
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
