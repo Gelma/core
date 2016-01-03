@@ -1360,7 +1360,7 @@ bool lcl_moveSeriesOrCheckIfMoveIsAllowed(
                     for( sal_Int32 nS = 0; !bFound && nS < aSeriesList.getLength(); ++nS )
                     {
 
-                        // We found the series we are interrested in !
+                        // We found the series we are interested in!
                         if( xGivenDataSeries==aSeriesList[nS] )
                         {
                             sal_Int32 nOldSeriesIndex = nS;
