@@ -31,7 +31,7 @@ namespace framework{
 
 /**
     @short      special ctor
-    @descr      It initialize this new instance with a (hopyfully) valid job URL.
+    @descr      It initialize this new instance with a (hopefully) valid job URL.
                 This URL will be parsed. After that we set our members right,
                 so other interface methods of this class can be used to get
                 all items of this URL. Of course it will be possible to know,
